@@ -1,0 +1,287 @@
+{
+  "SI1": {
+    "name": "Instructional Clarity",
+    "description": "Teacher clearly states the lesson goal",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "PP_00_01",
+        "title": "5 step lesson plan",
+        "domain": "Pedagogical Practice",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/2988955b-10ae-4293-a8c5-eb739a26cd29.mp4",
+        "rationale": "Root fix for vague or absent goals. If teacher cannot plan, they cannot state goals."
+      },
+      {
+        "code": "AF_00_03",
+        "title": "Quick checks for understanding",
+        "domain": "Assessment and Feedback",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/e83e6973-4250-4914-b41a-64f3c84f7c4b.mp4",
+        "rationale": "Once planning habit is forming, add quick checks to confirm students understand the goal."
+      },
+      {
+        "code": "PP_01_02_V2",
+        "title": "Blooms Taxonomy",
+        "domain": "Pedagogical Practice",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/89c3ed80-e840-421d-a879-dfe049cc0d07.mp4",
+        "rationale": "If SI1 still failing after planning + checks, teacher needs depth in goal-setting."
+      }
+    ]
+  },
+  "SI2": {
+    "name": "Logical Flow",
+    "description": "Lesson progresses with clear structure",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "PP_00_01",
+        "title": "5 step lesson plan",
+        "domain": "Pedagogical Practice",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/2988955b-10ae-4293-a8c5-eb739a26cd29.mp4",
+        "rationale": "No lesson architecture = no flow. Start with basic planning structure."
+      },
+      {
+        "code": "PP_02_07",
+        "title": "Using Varied Strategies to Build Understanding",
+        "domain": "Pedagogical Practice",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/4c9cd50c-5e18-4211-b72e-ad401ab1eedf.mp4",
+        "rationale": "If flow is still poor after planning is solid, teacher needs variety in instructional strategies."
+      }
+    ]
+  },
+  "SI3": {
+    "name": "Subject Content Accuracy",
+    "description": "Teacher delivers stated learning accurately",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "CE_00_01",
+        "title": "Number Sense",
+        "domain": "Content Expertise",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/3f33c11b-67c0-404f-b9e7-6d2159975bf7.mp4",
+        "rationale": "Number/operations errors — most common in mathematics content."
+      },
+      {
+        "code": "CE_00_07_V02",
+        "title": "Phonic strategies part 1",
+        "domain": "Content Expertise",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/df1d0990-f9d1-47e2-ae13-4e4b6a8e1f22.mp4",
+        "rationale": "Phonics errors — most common in literacy content."
+      },
+      {
+        "code": "CE_00_14",
+        "title": "بھاری اور ہلکی آوازیں (Heavy and Light Sounds)",
+        "domain": "Content Expertise",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8351ad7e-691c-45e5-9725-40d1f64b030f.mp4",
+        "rationale": "Letter/sound errors — most common in Urdu language content."
+      }
+    ]
+  },
+  "PIC-1": {
+    "name": "Activities & Tasks Alignment",
+    "description": "Activities match learning objectives and cognitive demands",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "PP_03_01",
+        "title": "Learning Objectives & Task Design",
+        "domain": "Pedagogical Practice",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/learning-objectives-task-design.mp4",
+        "rationale": "If tasks don't match objectives, lesson structure breaks. Foundation of coherent instruction."
+      },
+      {
+        "code": "PP_03_02",
+        "title": "Cognitive Demand Levels (DOK)",
+        "domain": "Pedagogical Practice",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/cognitive-demand-levels.mp4",
+        "rationale": "Tasks must match cognitive level needed for learning goal. Recall vs analysis vs synthesis."
+      },
+      {
+        "code": "PP_03_03",
+        "title": "Task Sequencing & Scaffolding",
+        "domain": "Pedagogical Practice",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/task-sequencing-scaffolding.mp4",
+        "rationale": "Structure task progression from simple to complex to maintain engagement and learning."
+      }
+    ]
+  },
+  "PIC-3": {
+    "name": "Understanding Student Misconceptions",
+    "description": "Teacher addresses student misunderstandings",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "AF_01_01",
+        "title": "Identifying Common Misconceptions",
+        "domain": "Assessment and Feedback",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/identifying-misconceptions.mp4",
+        "rationale": "Teachers must know subject-specific errors students make. Unaddressed, they compound."
+      },
+      {
+        "code": "AF_01_02",
+        "title": "Correcting Misconceptions Effectively",
+        "domain": "Assessment and Feedback",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/correcting-misconceptions.mp4",
+        "rationale": "Direct correction without understanding causes frustration. Reteach with new approach."
+      }
+    ]
+  },
+  "PIC-4": {
+    "name": "Quality Questioning",
+    "description": "Teacher uses open-ended and probing questions",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "AF_02_01",
+        "title": "Bloom's Revised Taxonomy & Questioning Levels",
+        "domain": "Assessment and Feedback",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/blooms-questioning.mp4",
+        "rationale": "Not all questions are equal. Recall is necessary but not sufficient for deep learning."
+      },
+      {
+        "code": "AF_02_02",
+        "title": "Wait Time & Think-Pair-Share",
+        "domain": "Assessment and Feedback",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/wait-time-think-pair-share.mp4",
+        "rationale": "Teachers often wait only 1 second. 3-5 seconds dramatically improves response quality."
+      }
+    ]
+  },
+  "PIA-3": {
+    "name": "Catering to Learning Levels",
+    "description": "Teacher differentiates instruction for different student levels",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "DP_01_01",
+        "title": "Differentiation Strategies Overview",
+        "domain": "Differentiation and Support",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/differentiation-overview.mp4",
+        "rationale": "Without differentiation, struggling students fall behind and advanced students disengage. Highest equity impact."
+      },
+      {
+        "code": "DP_01_02",
+        "title": "Verbal Differentiation in Whole-Class",
+        "domain": "Differentiation and Support",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/verbal-differentiation.mp4",
+        "rationale": "Different explanations for different groups during whole-class instruction without worksheets."
+      },
+      {
+        "code": "DP_01_03",
+        "title": "Flexible Grouping & Adaptive Pacing",
+        "domain": "Differentiation and Support",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/flexible-grouping.mp4",
+        "rationale": "Groups should change based on learning needs, not fixed. Pacing must match group readiness."
+      }
+    ]
+  },
+  "PIA-4": {
+    "name": "Responsive Re-explanation",
+    "description": "Teacher explains differently when students don't understand",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "DP_02_01",
+        "title": "Recognizing Confusion in Real Time",
+        "domain": "Differentiation and Support",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/recognizing-confusion.mp4",
+        "rationale": "Teachers must read confusion signals: blank looks, silence, wrong answers."
+      },
+      {
+        "code": "DP_02_02",
+        "title": "Responsive Teaching: Changing Course",
+        "domain": "Differentiation and Support",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/responsive-teaching.mp4",
+        "rationale": "When confusion is met with repetition, learning stalls. High-leverage skill: re-explain differently."
+      }
+    ]
+  },
+  "M1": {
+    "name": "Mathematical Discourse & Reasoning",
+    "description": "Students justify solutions and explain mathematical thinking",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "CK_MATH_01",
+        "title": "Mathematical Reasoning vs Computation",
+        "domain": "Content Knowledge",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/math-reasoning.mp4",
+        "rationale": "Justifying solutions is the core of mathematics. Without it, students are computing, not reasoning."
+      },
+      {
+        "code": "CK_MATH_02",
+        "title": "Facilitating Mathematical Discourse",
+        "domain": "Content Knowledge",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/math-discourse.mp4",
+        "rationale": "Teacher must create safe space for students to explain and challenge reasoning."
+      }
+    ]
+  },
+  "L1": {
+    "name": "Explicit Phonics / Decoding",
+    "description": "Teacher provides systematic phonics instruction",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "CK_LITERACY_01",
+        "title": "Phonics Foundations: Sound-Symbol Relationships",
+        "domain": "Content Knowledge",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/phonics-foundations.mp4",
+        "rationale": "Foundational literacy skill. Weak phonics has direct, lasting impact on reading ability."
+      },
+      {
+        "code": "CK_LITERACY_02",
+        "title": "Systematic Phonics Instruction Sequences",
+        "domain": "Content Knowledge",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/phonics-sequences.mp4",
+        "rationale": "Phonics must follow logical sequence: consonants → short vowels → digraphs → blends → long vowels."
+      }
+    ]
+  },
+  "S1": {
+    "name": "Inquiry-Based Approach",
+    "description": "Teacher uses inquiry before explanation in science",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "CK_SCIENCE_01",
+        "title": "The 5E Instructional Model (Engage, Explore, Explain, Elaborate, Evaluate)",
+        "domain": "Content Knowledge",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/5e-model.mp4",
+        "rationale": "Inquiry before explanation is the defining feature of science pedagogy. Absence reduces science to fact transmission."
+      },
+      {
+        "code": "CK_SCIENCE_02",
+        "title": "Facilitating Student Investigation & Questioning",
+        "domain": "Content Knowledge",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/student-investigation.mp4",
+        "rationale": "Students must form hypotheses and test them. Teacher facilitates discovery rather than telling."
+      }
+    ]
+  }
+}

@@ -1,0 +1,134 @@
+.container {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+.container h2 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.scoresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.scoreCard {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #bdc3c7;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
+.name {
+  background-color: #ecf0f1;
+  color: #34495e;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.description {
+  color: #7f8c8d;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.scoreValue {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.scoreValue.green {
+  background-color: #d5f4e6;
+  border-left: 4px solid #27ae60;
+}
+
+.scoreValue.orange {
+  background-color: #fef3cd;
+  border-left: 4px solid #f39c12;
+}
+
+.scoreValue.red {
+  background-color: #f8d7da;
+  border-left: 4px solid #e74c3c;
+}
+
+.score {
+  font-size: 2rem;
+  font-weight: bold;
+  color: inherit;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.evidence {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.evidence strong {
+  display: block;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.evidence p {
+  color: #555;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.escalation {
+  background-color: #fff3cd;
+  border-left: 4px solid #f39c12;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.escalation p {
+  margin: 0 0 0.75rem 0;
+  color: #856404;
+  font-weight: 500;
+}
+
+.escalationBar {
+  width: 100%;
+  height: 8px;
+  background-color: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.escalationFill {
+  height: 100%;
+  background-color: #f39c12;
+  transition: width 0.3s ease;
+}

@@ -1,0 +1,86 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 2rem;
+}
+
+.uploadBox {
+  border: 2px dashed #3498db;
+  border-radius: 8px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  background-color: #f8f9fa;
+}
+
+.uploadBox h2 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.uploadBox p {
+  color: #7f8c8d;
+  margin-bottom: 1.5rem;
+}
+
+.fileInput {
+  display: none;
+}
+
+.uploadLabel {
+  display: block;
+  padding: 2rem;
+  background-color: white;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #3498db;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.uploadLabel:hover {
+  background-color: #ecf0f1;
+  border-color: #3498db;
+}
+
+.fileInput:disabled ~ .uploadLabel {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #ecf0f1;
+}
+
+.preview {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #27ae60;
+}
+
+.preview p {
+  color: #27ae60;
+  margin-bottom: 1rem;
+}
+
+.audioPlayer {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.status {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #e8f4f8;
+  border-left: 4px solid #3498db;
+  border-radius: 4px;
+}
+
+.status p {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 0.95rem;
+}

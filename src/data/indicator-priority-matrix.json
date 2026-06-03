@@ -1,0 +1,257 @@
+{
+  "priorityLevels": {
+    "P1": "Critical",
+    "P2": "High",
+    "P3": "Moderate",
+    "P4": "Developing",
+    "P5": "Foundational",
+    "P6": "Basic"
+  },
+  "tiers": {
+    "tier_1_structural": {
+      "name": "Structural",
+      "tier_number": 1,
+      "unlock_rule": "SI1 (P1) must be mastered before Core unlocks",
+      "indicators": {
+        "SI1": {
+          "code": "SI1",
+          "name": "Instructional Clarity",
+          "priority": "P1",
+          "priority_rank": 1,
+          "rationale": "Without a clear goal, students cannot orientate to the lesson. Everything else depends on this.",
+          "tier": "tier_1_structural"
+        },
+        "SI2": {
+          "code": "SI2",
+          "name": "Logical Flow",
+          "priority": "P2",
+          "priority_rank": 2,
+          "rationale": "A lesson without clear structure loses students mid-way. Foundational but recoverable if slightly weak.",
+          "tier": "tier_1_structural"
+        },
+        "SI3": {
+          "code": "SI3",
+          "name": "Subject Content Accuracy",
+          "priority": "P2",
+          "priority_rank": 2,
+          "rationale": "Inaccurate content causes lasting harm to student understanding. Non-negotiable regardless of everything else.",
+          "tier": "tier_1_structural"
+        }
+      }
+    },
+    "tier_2_core": {
+      "name": "Core",
+      "tier_number": 2,
+      "unlock_rule": "PIC-1 (P1) mastered + at least 3 of remaining Core indicators consistently strong",
+      "indicators": {
+        "PIC-1": {
+          "code": "PIC-1",
+          "name": "Activities & Tasks Alignment",
+          "priority": "P1",
+          "priority_rank": 1,
+          "rationale": "If tasks don't match the learning objective or cognitive level, the lesson is structurally broken regardless of delivery quality.",
+          "tier": "tier_2_core"
+        },
+        "PIC-3": {
+          "code": "PIC-3",
+          "name": "Understanding Student Misconceptions",
+          "priority": "P2",
+          "priority_rank": 2,
+          "rationale": "Unaddressed misconceptions compound over time. Catching and correcting them is high-leverage teaching.",
+          "tier": "tier_2_core"
+        },
+        "PIC-4": {
+          "code": "PIC-4",
+          "name": "Quality Questioning",
+          "priority": "P3",
+          "priority_rank": 3,
+          "rationale": "Open-ended and probing questions are the primary vehicle for moving students beyond recall into reasoning.",
+          "tier": "tier_2_core"
+        },
+        "PIC-2": {
+          "code": "PIC-2",
+          "name": "Use of Academic Language",
+          "priority": "P4",
+          "priority_rank": 4,
+          "rationale": "Subject-specific vocabulary is essential for conceptual development. Weak modelling limits how students think and express ideas.",
+          "tier": "tier_2_core"
+        },
+        "PIC-5": {
+          "code": "PIC-5",
+          "name": "Effective Feedback",
+          "priority": "P5",
+          "priority_rank": 5,
+          "rationale": "Specific verbal feedback accelerates learning but lessons can function without it being consistently strong.",
+          "tier": "tier_2_core"
+        }
+      }
+    },
+    "tier_3_advanced": {
+      "name": "Advanced",
+      "tier_number": 3,
+      "unlock_rule": "PIA-3 (P1) mastered + at least 3 of remaining Advanced indicators consistently strong",
+      "indicators": {
+        "PIA-3": {
+          "code": "PIA-3",
+          "name": "Catering to Learning Levels",
+          "priority": "P1",
+          "priority_rank": 1,
+          "rationale": "Without verbal differentiation, struggling students fall further behind and advanced students disengage. Highest equity impact in this tier.",
+          "tier": "tier_3_advanced"
+        },
+        "PIA-4": {
+          "code": "PIA-4",
+          "name": "Responsive Re-explanation",
+          "priority": "P2",
+          "priority_rank": 2,
+          "rationale": "When confusion is met with repetition rather than a new approach, learning stalls. High-leverage instructional skill.",
+          "tier": "tier_3_advanced"
+        },
+        "PIA-1": {
+          "code": "PIA-1",
+          "name": "Prior Knowledge Activation",
+          "priority": "P3",
+          "priority_rank": 3,
+          "rationale": "Activating prior knowledge bridges what students know to what they are learning. High impact when done well.",
+          "tier": "tier_3_advanced"
+        },
+        "MA-0": {
+          "code": "MA-0",
+          "name": "Instructional Model Structure (GRR)",
+          "priority": "P4",
+          "priority_rank": 4,
+          "rationale": "Gradual Release of Responsibility ensures students progressively move toward independence. Weak GRR keeps students dependent on the teacher.",
+          "tier": "tier_3_advanced"
+        },
+        "PIA-2": {
+          "code": "PIA-2",
+          "name": "Meaningful Connections",
+          "priority": "P5",
+          "priority_rank": 5,
+          "rationale": "Real-life connections and analogies make abstract content accessible. Strong lever for comprehension and retention.",
+          "tier": "tier_3_advanced"
+        },
+        "PIA-5": {
+          "code": "PIA-5",
+          "name": "Student Agency & Participation",
+          "priority": "P6",
+          "priority_rank": 6,
+          "rationale": "Important for ownership and engagement but requires strong foundational and core skills to be sustainably implemented.",
+          "tier": "tier_3_advanced"
+        }
+      }
+    },
+    "tier_4_subject_specific": {
+      "name": "Subject-Specific",
+      "tier_number": 4,
+      "unlock_rule": "PIA-3 (P1) mastered + at least 3 of remaining Advanced indicators consistently strong",
+      "subjects": {
+        "mathematics": {
+          "name": "Mathematics",
+          "indicators": {
+            "M1": {
+              "code": "M1",
+              "name": "Mathematical Discourse & Reasoning",
+              "priority": "P1",
+              "priority_rank": 1,
+              "rationale": "Justifying solutions is the core of mathematical thinking. Without it students are computing, not reasoning.",
+              "tier": "tier_4_subject_specific",
+              "subject": "mathematics"
+            },
+            "M2": {
+              "code": "M2",
+              "name": "Problem-Solving & Productive Struggle",
+              "priority": "P2",
+              "priority_rank": 2,
+              "rationale": "Think time and tolerance for struggle are validated predictors of deep mathematical understanding.",
+              "tier": "tier_4_subject_specific",
+              "subject": "mathematics"
+            }
+          }
+        },
+        "literacy": {
+          "name": "Literacy",
+          "indicators": {
+            "L1": {
+              "code": "L1",
+              "name": "Explicit Phonics / Decoding",
+              "priority": "P1",
+              "priority_rank": 1,
+              "rationale": "Foundational literacy skill. Weak phonics instruction has direct and lasting impact on reading ability.",
+              "tier": "tier_4_subject_specific",
+              "subject": "literacy"
+            },
+            "L2": {
+              "code": "L2",
+              "name": "Comprehension Strategy Instruction",
+              "priority": "P2",
+              "priority_rank": 2,
+              "rationale": "Metacognitive reading strategies bridge decoding and deep comprehension.",
+              "tier": "tier_4_subject_specific",
+              "subject": "literacy"
+            },
+            "L3": {
+              "code": "L3",
+              "name": "Reading-Writing Connections",
+              "priority": "P3",
+              "priority_rank": 3,
+              "rationale": "Valuable integration skill but requires strong decoding and comprehension foundations first.",
+              "tier": "tier_4_subject_specific",
+              "subject": "literacy"
+            }
+          }
+        },
+        "science": {
+          "name": "Science",
+          "indicators": {
+            "S1": {
+              "code": "S1",
+              "name": "Inquiry-Based Approach",
+              "priority": "P1",
+              "priority_rank": 1,
+              "rationale": "Inquiry before explanation is the defining feature of science pedagogy. Its absence reduces science to fact transmission.",
+              "tier": "tier_4_subject_specific",
+              "subject": "science"
+            },
+            "S2": {
+              "code": "S2",
+              "name": "Science Talk & Student Sense-Making",
+              "priority": "P2",
+              "priority_rank": 2,
+              "rationale": "Students verbalising science understanding is the primary signal that learning is happening, not just listening.",
+              "tier": "tier_4_subject_specific",
+              "subject": "science"
+            }
+          }
+        }
+      }
+    }
+  },
+  "prioritySelectionRules": {
+    "rule_1": "Always flag P1 gaps first across all active tiers",
+    "rule_2": "Fill remaining slots with P2 gaps — lower tier first (Structural → Core → Advanced → Subject-Specific)",
+    "rule_3": "P3 gaps only surface when all P1 and P2 gaps in active tiers are resolved",
+    "rule_4": "Subject-Specific indicators follow the same P1/P2/P3 logic — a subject P1 is treated identically to a universal P1 once Subject-Specific is unlocked",
+    "rule_5": "Cap at 3 items total — hold the rest for the next cycle",
+    "rule_6": "If multiple P2 gaps exist across tiers, lower tier takes precedence — Structural P2 before Core P2 before Advanced P2 before Subject-Specific P2"
+  },
+  "slgpTreatment": {
+    "description": "Student Learning Gain Proxies (SLGP-1 to SLGP-5)",
+    "visibility": "Backend signals only - never appear in teacher-facing feedback",
+    "cap_impact": "Never count toward the 3-item feedback cap",
+    "signals": {
+      "slgp_weak_indicator_flagged": {
+        "effect": "Feedback carries slightly more urgency — 'students are not yet showing this in their responses'"
+      },
+      "slgp_strong_indicator_flagged": {
+        "effect": "Feedback is gentler — 'students are responding well, this just needs more consistency'"
+      },
+      "slgp_strong_indicator_strong": {
+        "effect": "Pure celebration signal — reinforces mastery"
+      },
+      "slgp_weak_indicator_strong": {
+        "effect": "Coach dashboard flag only — warrants closer observation next cycle. Not surfaced to teacher."
+      }
+    }
+  }
+}

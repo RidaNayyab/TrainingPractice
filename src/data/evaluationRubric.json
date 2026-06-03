@@ -1,0 +1,215 @@
+{
+  "systemPrompt": "You are an instructional coach for primary school teachers in Pakistan. A teacher has responded to a classroom practice scenario. Evaluate her response and provide personalized coaching feedback.\n\nEvaluate both text and audio transcriptions the same way — do not penalize for informal speech, filler words, or incomplete sentences natural in spoken language.\n\nSTEP 1 — READ THE QUESTION CAREFULLY.\nIdentify exactly what the question asks the teacher to demonstrate.\nMap the response to the rubric: determine which criteria are testable given the question.\nIf a criterion cannot reasonably appear in a response to this question, mark it as NOT APPLICABLE.\nDo not penalize the teacher for not demonstrating something the question did not ask for.\n\nSTEP 2 — SCORE ONLY AGAINST APPLICABLE CRITERIA.\nDo not infer intent. If the teacher did not say it, it did not happen.\nDo not inflate scores: YES is excellent, PARTIAL is incomplete/unclear, NO is missing.\n\nSTEP 3 — WRITE PERSONALIZED COACHING FEEDBACK.\nYour feedback must follow this exact structure:\n1. Reference what she ACTUALLY said or did (quote or paraphrase directly)\n2. Name the specific gap or strength (connect to her actual words, not generic comments)\n3. Give ONE concrete action she can take (explain why it matters)\n\nSpeak directly to her like a warm, honest coach. Use simple language, no jargon.\n\nExample of GOOD feedback:\n\"You said 'Hello, all right, okay, let's start. Maths.' — this is good for building classroom warmth, but students don't know what they're learning today. Before you teach, add one sentence: 'Today you will learn to add two-digit numbers' so students know exactly what to focus on.\"\n\nExample of BAD feedback (generic, not personal):\n\"The response lacks a clear learning goal. Teachers should state learning objectives clearly.\"\n\nRULES:\n- Always quote or reference her specific words\n- Always explain WHY the change matters (impact on students)\n- Never mention rubric, scores, or evaluation process\n- If score is YES: celebrate what she did well\n- If score is PARTIAL/NO: identify gap + one concrete fix\n\nOUTPUT: Return ONLY valid JSON with no other text:\n{\n  \"score\": \"YES\" or \"PARTIAL\" or \"NO\",\n  \"feedback\": \"Your personalized coaching feedback (2-3 sentences, direct and specific to her response).\",\n  \"rubric_criteria_met\": [list of criteria she demonstrated],\n  \"rubric_criteria_missed\": [list of criteria she missed],\n  \"rubric_criteria_not_applicable\": [list of criteria the question did not test]\n}",
+  "indicators": {
+    "SI1": {
+      "name": "Instructional Clarity",
+      "description": "Teacher clearly states the lesson goal",
+      "criteria": {
+        "YES": [
+          "States a specific, measurable learning goal in student-friendly language",
+          "Explains why the goal matters or connects it to prior learning",
+          "Indicates how students will know they've achieved the goal"
+        ],
+        "PARTIAL": [
+          "States a goal but it is vague, too complex, or not in student language",
+          "States a goal but does not explain its purpose or success criteria",
+          "Attempts to connect goal to student understanding but explanation is unclear"
+        ],
+        "NO": [
+          "Does not state a clear goal",
+          "Goal is so vague it cannot guide instruction",
+          "Response does not address goal-setting at all"
+        ]
+      }
+    },
+    "SI2": {
+      "name": "Logical Flow",
+      "description": "Lesson progresses with clear structure",
+      "criteria": {
+        "YES": [
+          "Describes a clear beginning, middle, and end",
+          "Each segment connects logically to the next",
+          "Pacing and transitions keep students oriented"
+        ],
+        "PARTIAL": [
+          "Attempts structure but sequence is unclear or disconnected",
+          "Has beginning and end but middle is muddled",
+          "Structure exists but transitions are abrupt or confusing"
+        ],
+        "NO": [
+          "No clear structure or sequence",
+          "Segments feel random or disconnected",
+          "Difficult to follow how the lesson progresses"
+        ]
+      }
+    },
+    "SI3": {
+      "name": "Subject Content Accuracy",
+      "description": "Teacher delivers stated learning accurately",
+      "criteria": {
+        "YES": [
+          "Content is factually correct with no errors",
+          "Explanation is age-appropriate and clear",
+          "If teaching a strategy or concept, the example is accurate"
+        ],
+        "PARTIAL": [
+          "Content is mostly correct but contains minor errors or oversimplifications",
+          "Explanation is unclear or could confuse students about the concept",
+          "Example does not fully illustrate the concept accurately"
+        ],
+        "NO": [
+          "Content contains significant factual errors",
+          "Explanation is so unclear students would not understand correctly",
+          "Example is inaccurate or reinforces misconceptions"
+        ]
+      }
+    },
+    "PIC-1": {
+      "name": "Activities & Tasks Alignment",
+      "description": "Activities match learning objectives and cognitive demands",
+      "criteria": {
+        "YES": [
+          "Task directly requires students to do what the objective asks",
+          "Cognitive demand matches the objective (recall, analysis, creation, etc.)",
+          "Students will produce evidence of learning by completing the task"
+        ],
+        "PARTIAL": [
+          "Task is related to objective but not a direct match",
+          "Cognitive demand is below or above what objective requires",
+          "Task gives some evidence of learning but is indirect or incomplete"
+        ],
+        "NO": [
+          "Task does not connect to stated objective",
+          "Cognitive demand mismatches objective significantly",
+          "Task does not generate evidence of learning"
+        ]
+      }
+    },
+    "PIC-3": {
+      "name": "Understanding Student Misconceptions",
+      "description": "Teacher addresses student misunderstandings",
+      "criteria": {
+        "YES": [
+          "Identifies a specific, subject-accurate misconception students make",
+          "Describes how to elicit or recognize the misconception",
+          "Explains a concrete strategy to correct it (not just repeat)"
+        ],
+        "PARTIAL": [
+          "Names a misconception but description is vague or not subject-specific",
+          "Recognizes misconceptions exist but does not describe detection or correction",
+          "Offers a correction strategy but it is generic or unclear how it works"
+        ],
+        "NO": [
+          "Does not identify a specific misconception",
+          "Response shows awareness but no concrete action",
+          "Confuses misconception with a different instructional issue"
+        ]
+      }
+    },
+    "PIA-3": {
+      "name": "Catering to Learning Levels",
+      "description": "Teacher differentiates instruction for different student levels",
+      "criteria": {
+        "YES": [
+          "Describes different explanations, questions, or activities for different groups",
+          "Differentiation is specific to actual student needs (struggle vs. on-level vs. advanced)",
+          "All groups remain engaged and learning, not just on-level students"
+        ],
+        "PARTIAL": [
+          "Acknowledges different levels exist but differentiation is vague",
+          "Differentiation is described but applies to only 1 or 2 groups",
+          "Approach might help some students but others would still disengage"
+        ],
+        "NO": [
+          "No differentiation described",
+          "One-size-fits-all approach that does not address learning differences",
+          "Suggests ability grouping but no instructional change within groups"
+        ]
+      }
+    },
+    "PIA-4": {
+      "name": "Responsive Re-explanation",
+      "description": "Teacher explains differently when students don't understand",
+      "criteria": {
+        "YES": [
+          "Describes recognizing that students are confused (specific signal)",
+          "Explains a different approach or strategy (not repetition)",
+          "New explanation targets likely source of confusion"
+        ],
+        "PARTIAL": [
+          "Recognizes confusion but response is vague or generic",
+          "Offers an alternative but it is unclear how it differs from the first",
+          "Re-explanation exists but does not address root of confusion"
+        ],
+        "NO": [
+          "Does not recognize need to respond to confusion",
+          "Response is to repeat the same explanation",
+          "No concrete alternative approach described"
+        ]
+      }
+    },
+    "M1": {
+      "name": "Mathematical Discourse & Reasoning",
+      "description": "Students justify solutions and explain mathematical thinking",
+      "criteria": {
+        "YES": [
+          "Creates space for students to explain their reasoning aloud",
+          "Asks follow-up questions that push thinking ('Why does that work?' 'Is there another way?')",
+          "Students do the explaining, not just the teacher"
+        ],
+        "PARTIAL": [
+          "Invites explanation but questions are yes/no or closed",
+          "Teacher explains students' thinking instead of students explaining their own",
+          "Reasoning is invited but not deeply probed or extended"
+        ],
+        "NO": [
+          "Focus is on correct answer only, not on reasoning",
+          "Students compute but do not explain",
+          "No opportunity for mathematical discourse"
+        ]
+      }
+    },
+    "L1": {
+      "name": "Explicit Phonics / Decoding",
+      "description": "Teacher provides systematic phonics instruction",
+      "criteria": {
+        "YES": [
+          "Explicitly teaches the sound-symbol relationship being targeted",
+          "Provides multiple examples and non-examples",
+          "Connects to known phonics patterns or shows progression"
+        ],
+        "PARTIAL": [
+          "Teaches phonics but explanation is vague or incomplete",
+          "Examples are provided but sequence or logic is unclear",
+          "Connection to broader phonics system is weak"
+        ],
+        "NO": [
+          "No explicit sound-symbol teaching",
+          "Assumes students will infer the pattern without direct instruction",
+          "Focus is on whole-word recognition instead of decoding"
+        ]
+      }
+    },
+    "S1": {
+      "name": "Inquiry-Based Approach",
+      "description": "Teacher uses inquiry before explanation in science",
+      "criteria": {
+        "YES": [
+          "Students investigate or explore before being told the answer",
+          "Teacher asks questions that guide discovery ('What do you notice? What happens if...?')",
+          "Explanation follows after student observation or experimentation"
+        ],
+        "PARTIAL": [
+          "Attempts inquiry but explanation comes too early",
+          "Questions are provided but are leading or have one answer",
+          "Student activity exists but is more confirmation than true inquiry"
+        ],
+        "NO": [
+          "Teacher explains concept first, then students confirm",
+          "No hands-on investigation or exploration",
+          "Science taught as facts to memorize, not phenomena to explore"
+        ]
+      }
+    }
+  }
+}

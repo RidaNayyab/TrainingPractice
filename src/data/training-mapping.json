@@ -1,0 +1,821 @@
+{
+  "trainings": {
+    "SI1": {
+      "indicator_code": "SI1",
+      "indicator_name": "Instructional Clarity",
+      "tier": "tier_1_structural",
+      "priority": "P1",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to understand and follow a basic 5-step lesson plan that includes one measurable learning objective.",
+          "training_title": "5 step lesson plan",
+          "training_code": "PP_00_01",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/2988955b-10ae-4293-a8c5-eb739a26cd29.mp4",
+          "rationale": "Root fix for vague or absent goals. If no measurable objective is stated, lesson planning is the foundational gap. Same video serves SI2 (no opening) and PIC-1 (no alignment). If already shown for either, skip to Obs 4.",
+          "shared_with": ["SI2", "PIC-1"]
+        },
+        {
+          "rank": 2,
+          "level": "L0",
+          "domain": "Assessment and Feedback",
+          "training_lo": "Teacher will be able to learn how to use quick checks for understanding (e.g., exit tickets, thumbs-up/thumbs-down) to gauge student comprehension during lessons.",
+          "training_title": "Quick checks for understanding",
+          "training_code": "AF_00_03",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/e83e6973-4250-4914-b41a-64f3c84f7c4b.mp4",
+          "rationale": "Once planning habit is forming, the next SI1 failure is absent comprehension checks. This LO directly builds that habit."
+        },
+        {
+          "rank": 3,
+          "level": "L1",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to identify and describe the six levels of Bloom's Taxonomy with examples of classroom tasks at each level.",
+          "training_title": "Blooms Taxonomy",
+          "training_code": "PP_01_02 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/89c3ed80-e840-421d-a879-dfe049cc0d07.mp4",
+          "rationale": "If SI1 still failing after planning + checking, the issue is usually vague objective verbs. Bloom's gives the teacher the language to write measurable goals.",
+          "shared_with": ["PIC-1"]
+        }
+      ]
+    },
+    "SI2": {
+      "indicator_code": "SI2",
+      "indicator_name": "Logical Flow",
+      "tier": "tier_1_structural",
+      "priority": "P2",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to understand and follow a basic 5-step lesson plan that includes one measurable learning objective.",
+          "training_title": "5 step lesson plan",
+          "training_code": "PP_00_01",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/2988955b-10ae-4293-a8c5-eb739a26cd29.mp4",
+          "rationale": "No lesson architecture = no logical flow. The 5-step plan establishes opening–middle–end as a structural habit. Same video as SI1 Obs 3 and PIC-1 Obs 3. If already shown, skip to Obs 4.",
+          "shared_with": ["SI1", "PIC-1"]
+        },
+        {
+          "rank": 2,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to sequence 2–3 connected lessons using progressive learning objectives and varied strategies for concept development.",
+          "training_title": "Using Varied Strategies to Build Connected Lessons",
+          "training_code": "PP-02-07",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/4c9cd50c-5e18-4211-b72e-ad401ab1eedf.mp4",
+          "rationale": "If flow is still poor after planning is addressed, multi-lesson sequencing forces deliberate transition design across a unit — making coherence a planned act."
+        }
+      ]
+    },
+    "SI3": {
+      "indicator_code": "SI3",
+      "indicator_name": "Subject Content Accuracy",
+      "tier": "tier_1_structural",
+      "priority": "P1",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "subject_specific": "mathematics",
+          "training_lo": "Teacher will be able to Demonstrate understanding of number sense up to 100 using place value models and bundling techniques (tens frames, number lines).",
+          "training_title": "Number Sense",
+          "training_code": "CE_00_01",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/3f33c11b-67c0-404f-b9e7-6d2159975bf7.mp4",
+          "rationale": "Number/operations errors — most common Gr 1–3 math content failure. AI matches to topic-specific LO from transcript."
+        },
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "subject_specific": "literacy",
+          "training_lo": "Teacher will be able to identify and teach individual letter sounds, vowels, blends, digraphs (e.g., sh, ch) using phonics-based strategies.",
+          "training_title": "Phonic strategies part 1",
+          "training_code": "CE_00_07_V02",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/df1d0990-f9d1-47e2-ae13-4e4b6a8e1f22.mp4",
+          "rationale": "Phonics errors — most common early English content failure. AI matches to topic from transcript."
+        },
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "subject_specific": "urdu",
+          "training_lo": "Teacher will be able to recognize and correctly pronounce all Urdu letters (الف سے ی) with proper articulation, including bhari and halki awaazain.",
+          "training_title": "بھاری اور ہلکی آوازیں",
+          "training_code": "CE_00_14",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8351ad7e-691c-45e5-9725-40d1f64b030f.mp4",
+          "rationale": "Letter/sound errors — most common early Urdu content failure. AI matches to topic from transcript."
+        },
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "subject_specific": "science",
+          "training_title": "⚑ GAP: No science content LOs exist",
+          "rationale": "Confirmed gap. Escalate to coach through nudge"
+        }
+      ]
+    },
+    "PIC-1": {
+      "indicator_code": "PIC-1",
+      "indicator_name": "Activities & Tasks Alignment",
+      "tier": "tier_2_core",
+      "priority": "P1",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to understand and follow a basic 5-step lesson plan that includes one measurable learning objective.",
+          "training_title": "5 step lesson plan",
+          "training_code": "PP_00_01",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/2988955b-10ae-4293-a8c5-eb739a26cd29.mp4",
+          "rationale": "Alignment fails first because there is no planning habit linking objective to activity. Same video as SI1 Obs 3. If already shown, skip to Obs 4.",
+          "shared_with": ["SI1", "SI2"]
+        },
+        {
+          "rank": 2,
+          "level": "L1",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to identify and describe the six levels of Bloom's Taxonomy with examples of classroom tasks at each level.",
+          "training_title": "Blooms Taxonomy",
+          "training_code": "PP_01_02 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/89c3ed80-e840-421d-a879-dfe049cc0d07.mp4",
+          "rationale": "If basic planning is forming but cognitive level is mismatched (topic right, Bloom's level wrong), Bloom's gives the framework to align task demand to objective verb.",
+          "shared_with": ["SI1"]
+        },
+        {
+          "rank": 3,
+          "level": "L1",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to create a basic 5-step lesson plan using one measurable learning objective and an appropriate activity for concept engagement.",
+          "training_title": "Five step lesson plan",
+          "training_code": "PP_01_01 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8a35f910-8d11-4f24-ae3c-5b3bd7f35a5a.mp4",
+          "rationale": "If alignment still fails, this L1 plan LO requires the teacher to actively design alignment — producing a plan where objective and activity are explicitly matched."
+        }
+      ]
+    },
+    "PIC-2": {
+      "indicator_code": "PIC-2",
+      "indicator_name": "Use of Academic Language",
+      "tier": "tier_2_core",
+      "priority": "P4",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": null,
+          "domain": null,
+          "training_title": "⚑ GAP: No Academic Language LO exists",
+          "rationale": "Confirmed gap. Escalate to coach through nudge"
+        }
+      ]
+    },
+    "PIC-3": {
+      "indicator_code": "PIC-3",
+      "indicator_name": "Understanding Student Misconceptions",
+      "tier": "tier_2_core",
+      "priority": "P2",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L1",
+          "domain": "Content Expertise",
+          "subject_specific": "mathematics",
+          "training_lo": "Teacher will be able to diagnose and correct common misconceptions in basic operations and number sense (e.g., borrowing, carrying errors).",
+          "training_title": "Misconceptions in basic operations",
+          "training_code": "CE_01_01 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/ff3e802e-214c-42fe-9e69-f34485eb054e.mp4",
+          "rationale": "Most direct match for math misconception handling. Gives teacher a taxonomy of common errors and correct responses.",
+          "shared_with": ["M1"]
+        },
+        {
+          "rank": 1,
+          "level": null,
+          "domain": null,
+          "subject_specific": ["literacy"],
+          "training_title": "⚑ GAP: No misconception diagnosis LO exists for English or Urdu literacy",
+          "rationale": "Confirmed gap. Escalate to coach through nudge"
+        },
+        {
+          "rank": 1,
+          "level": "L2",
+          "domain": "Science in Personal and Social Perspective",
+          "subject_specific": "science",
+          "training_lo": "Explores the prevalent misconceptions and incorrect beliefs that students may hold regarding scientific concepts.",
+          "training_title": "Common Misconceptions about Science-1",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/f527b063-59a4-49f1-9bdd-8b25614cd8da.mp4",
+          "rationale": "Science misconceptions - part 1"
+        },
+        {
+          "rank": 2,
+          "level": "L2",
+          "domain": "Science in Personal and Social Perspective",
+          "subject_specific": "science",
+          "training_lo": "Aiming to address and correct these misunderstandings through targeted instruction and clarification.",
+          "training_title": "Common Misconceptions about Science-2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/36781ef9-42a5-4910-9b9a-faff2d01d6c4.mp4",
+          "rationale": "Science misconceptions - part 2"
+        }
+      ]
+    },
+    "PIC-4": {
+      "indicator_code": "PIC-4",
+      "indicator_name": "Quality Questioning",
+      "tier": "tier_2_core",
+      "priority": "P3",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L1",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to use open-ended questions to encourage critical thinking and student expression during lessons.",
+          "training_title": "Open-Ended Questions",
+          "training_code": "PP_01_05 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/9f4e5b0d-4037-4f3d-bb4f-619512aaab6e.mp4",
+          "rationale": "Entry point for all questioning failures. Provides question stems and the conceptual case for open questions. Must come before any other questioning skill.",
+          "shared_with": ["M2", "S1", "S3"]
+        },
+        {
+          "rank": 2,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Use Socratic questioning to engage students in inquiry-based learning (e.g., 'How does climate change affect local ecosystems?').",
+          "training_title": "Use Socratic Questioning",
+          "training_code": "PP-02-03-V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8b9ef0d9-53e6-4a73-ac9e-5919f7553b9b.mp4",
+          "rationale": "If teacher asks open questions but never probes deeper after a student responds, Socratic questioning builds the follow-up as the core questioning move.",
+          "shared_with": ["M1"]
+        },
+        {
+          "rank": 3,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Use Bloom's Taxonomy to create 3 levels of questions for a lesson (e.g., recall, application, analysis for addition problems).",
+          "training_title": "Bloom's Taxonomy",
+          "training_code": "PP-02-08",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/b6ec9cef-be20-40ec-8196-51ca91b1719d.mp4",
+          "rationale": "If questioning quality still poor, designing questions in advance at multiple cognitive levels makes deliberate probing a planned act."
+        }
+      ]
+    },
+    "PIC-5": {
+      "indicator_code": "PIC-5",
+      "indicator_name": "Effective Feedback",
+      "tier": "tier_2_core",
+      "priority": "P5",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Assessment and Feedback",
+          "training_lo": "Teacher will be able to learn to provide positive verbal feedback to students, including simple suggestions for improvement (e.g., 'Great job on your math problems!' or 'Well done on reading the passage aloud.').",
+          "training_title": "Positive verbal feedback",
+          "training_code": "AF_00_04",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/f4cede99-6f99-4785-9a92-682b150e8355.mp4",
+          "rationale": "Most direct match. Provides explicit language templates for specific, actionable feedback. Entry point for both no-feedback and generic-praise failures."
+        },
+        {
+          "rank": 2,
+          "level": "L1",
+          "domain": "Assessment and Feedback",
+          "training_lo": "Teacher will be able to learn to use formative assessments like quizzes, small group discussions, and written reflections to measure student understanding and identify knowledge gaps.",
+          "training_title": "Formative Assessment",
+          "training_code": "AF_01_02 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/812cbeb4-d27a-4b2e-8fd8-3cb9237a19c6.mp4",
+          "rationale": "If feedback remains generic, teacher may lack diagnostic skill — cannot give specific feedback without identifying what is right or wrong. Formative assessment builds this."
+        }
+      ]
+    },
+    "PIA-1": {
+      "indicator_code": "PIA-1",
+      "indicator_name": "Prior Knowledge Activation",
+      "tier": "tier_3_advanced",
+      "priority": "P3",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Assessment and Feedback",
+          "training_lo": "Teacher will be able to implement diagnostic assessments at the beginning of lessons to assess prior knowledge on a topic (e.g., pre-test on fractions or a set of questions to assess understanding of previous topics).",
+          "training_title": "Assessment tools",
+          "training_code": "AF-00-01-L0",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/a7d69bee-d291-42cc-a7cb-bad087bd6234.mp4",
+          "rationale": "Most direct match. Teacher does not elicit prior knowledge at all. Builds the habit of checking before teaching."
+        },
+        {
+          "rank": 2,
+          "level": "L1",
+          "domain": "Assessment and Feedback",
+          "training_lo": "Teacher will be able to design diagnostic assessments at the beginning of each unit to assess students' prior knowledge, ensuring alignment with unit goals and objectives.",
+          "training_title": "diagnostic assessments",
+          "training_code": "AF_01_03 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/00b235b1-bb72-43a7-9fc5-0b791e3cd9cb.mp4",
+          "rationale": "If PIA-1 still failing, teacher needs to plan the prior knowledge bridge in advance — not improvise it. Unit-level diagnostic design builds this as a planning habit."
+        }
+      ]
+    },
+    "PIA-2": {
+      "indicator_code": "PIA-2",
+      "indicator_name": "Meaningful Connections",
+      "tier": "tier_3_advanced",
+      "priority": "P5",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "subject_specific": "mathematics",
+          "training_lo": "Teacher will be able to use real-life stories and multiple representations to teach word problems in all four operations.",
+          "training_title": "Word problems",
+          "training_code": "CE-00-04-LO-@",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/78f247c1-91b7-4f98-af2d-70739f859d30.mp4",
+          "rationale": "Math only at this specificity. Real-life story LO is the right entry for connection-making in math — concrete and immediately applicable."
+        },
+        {
+          "rank": 1,
+          "level": "L1",
+          "domain": "Student-Centered Learning Activities",
+          "subject_specific": "literacy",
+          "training_lo": "This activity can be conducted as per teachers' choice",
+          "training_title": "Practicing different Student Centered Activities- Backpack full of memories",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/89c50cbc-0191-445d-9212-cf04ad04d3b6.mp4",
+          "rationale": "Literacy connection building through student-centered activities"
+        },
+        {
+          "rank": 2,
+          "level": "L1",
+          "domain": "Student-Centered Learning Activities",
+          "subject_specific": "literacy",
+          "training_lo": "This activity can bring excitement for the learners!",
+          "training_title": "Examples of Activities in Teaching - Backpack full of Memories",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/20061121-f9f7-4129-a182-2b39b8380df7.mp4",
+          "rationale": "More literacy connection examples"
+        },
+        {
+          "rank": 1,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "subject_specific": "science",
+          "training_lo": "Design and facilitate an inquiry-based learning experience driven by a real-world question.",
+          "training_title": "inquiry-based learning",
+          "training_code": "PP-02-02",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/3708bb74-7e56-4798-b085-64b0b0196edb.mp4",
+          "rationale": "If PIA-2 still failing, inquiry learning makes real-world connection non-optional — every lesson starts from a real-world question by design.",
+          "shared_with": ["S1"]
+        }
+      ]
+    },
+    "PIA-3": {
+      "indicator_code": "PIA-3",
+      "indicator_name": "Catering to Learning Levels",
+      "tier": "tier_3_advanced",
+      "priority": "P1",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L1",
+          "domain": "Inclusive Education",
+          "training_lo": "Teacher will be able to learn how to scaffold lessons into smaller, manageable steps for students who struggle with complex concepts.",
+          "training_title": "Small Steps, Big Success",
+          "training_code": "IE_01_01 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/2e0de776-70fc-4868-9c4f-9a3d4cba269e.mp4",
+          "rationale": "Most achievable differentiation in large classrooms — verbal adjustments only, no extra materials. Direct match for no-scaffolding failure."
+        },
+        {
+          "rank": 2,
+          "level": "L1",
+          "domain": "Inclusive Education",
+          "training_lo": "Teacher will be able to learn to incorporate Universal Design for Learning (UDL), providing multiple means of representation (videos, audios, visuals) to cater to various learning needs.",
+          "training_title": "Universal Design for Learning: Teaching for Every Child",
+          "training_code": "2 - Inclusive Education - 731",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/9f5ba091-217a-40c7-a076-0a541f05844c.pdf",
+          "rationale": "If scaffolding habit is not forming, UDL provides the planning framework for designing lessons for diversity from the start."
+        },
+        {
+          "rank": 3,
+          "level": "L2",
+          "domain": "Inclusive Education",
+          "training_lo": "Teacher will be able to design and assign differentiated instructional activities, including tailored lessons and homework tasks, based on students' individual learning profiles and needs.",
+          "training_title": "Design and Assign differentiated Instructional Activities",
+          "training_code": "IE-02-01-V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/09101620-45e4-42c6-a7b8-1f3564d6f9c4.mp4",
+          "rationale": "If PIA-3 still failing, teacher needs to move from verbal scaffolding to structured task differentiation."
+        },
+        {
+          "rank": 4,
+          "level": "L1",
+          "domain": "Inclusive Education",
+          "training_lo": "Teacher will be able to learn to provide differentiated assessments (e.g., written tests, oral presentations, peer reviews) to meet diverse student needs.",
+          "training_title": "differentiated assessments",
+          "training_code": "IE_01_02 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/4504071c-b72b-41b5-8a6c-f47784db905d.mp4",
+          "rationale": "If differentiation still absent at assessment stage, this LO addresses it — different ways to demonstrate learning."
+        }
+      ]
+    },
+    "PIA-4": {
+      "indicator_code": "PIA-4",
+      "indicator_name": "Responsive Re-explanation",
+      "tier": "tier_3_advanced",
+      "priority": "P2",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": null,
+          "domain": null,
+          "training_title": "⚑ GAP: No LO addresses building alternative explanation strategies",
+          "rationale": "Confirmed gap. No dedicated training exists for alternative explanation techniques (analogy, diagram, different example). Escalate to coach through nudge"
+        }
+      ]
+    },
+    "PIA-5": {
+      "indicator_code": "PIA-5",
+      "indicator_name": "Student Agency & Participation",
+      "tier": "tier_3_advanced",
+      "priority": "P6",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L1",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to implement student-centered instructional strategies (e.g., group work, peer teaching, classroom routines) effectively in overcrowded classrooms to maintain engagement, manage behavior, and enhance learning outcomes.",
+          "training_title": "Students-centered instructional strategies",
+          "training_code": "PP_01_03 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/bd92e7ec-3284-40df-a471-eb49e1a3c4d5.mp4",
+          "rationale": "Directly addresses the core fear: student ownership = classroom chaos. Demonstrates it is compatible with large-class management."
+        },
+        {
+          "rank": 2,
+          "level": "L1",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to implement peer teaching where students explain concepts to each other.",
+          "training_title": "Peer Learning",
+          "training_code": "PP_01_04 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/ddf1f4c6-5c2e-43a5-ac61-bb7bd1dae16b.mp4",
+          "rationale": "Peer teaching gives students genuine ownership of explaining content — structured and low-risk."
+        },
+        {
+          "rank": 3,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Facilitate student-led discussions to assign roles and responsibilities in group projects.",
+          "training_title": "Group Projects",
+          "training_code": "PP-02-04",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/d42ac898-3cd0-45d2-85a6-322296ee46c9.mp4",
+          "rationale": "Roles and responsibilities give the teacher a protocol for handing over control — structured enough to feel safe."
+        },
+        {
+          "rank": 4,
+          "level": "L2",
+          "domain": "Classroom Management",
+          "training_lo": "Teacher will be able to set a clear, actionable vision for the classroom, communicating expectations and goals, and involving students in co-creating the classroom culture.",
+          "training_title": "Expectations and Goals",
+          "training_code": "3 - Classroom Management - 802",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/44d6c942-18fc-47a3-9948-067483c45d37.pdf",
+          "rationale": "If PIA-5 still failing, the issue is the teacher's fundamental belief about student role. Co-creating culture gives students formal ownership."
+        }
+      ]
+    },
+    "MA-0": {
+      "indicator_code": "MA-0",
+      "indicator_name": "Instructional Model Structure (GRR)",
+      "tier": "tier_3_advanced",
+      "priority": "P4",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L1",
+          "domain": "Active Learning Approaches",
+          "training_lo": "What is GRR? Graphical representation of it's implementation in classrooms which clearly defines the role of teachers and students",
+          "training_title": "Gradual Release of Responsibility (GRR)",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/7adb542e-0c2f-481a-896b-13eb9cfa8def.mp4",
+          "rationale": "Understanding the GRR model"
+        },
+        {
+          "rank": 2,
+          "level": "L1",
+          "domain": "Active Learning Approaches",
+          "training_lo": "How does a teacher makes students independent learners?",
+          "training_title": "Components of GRR",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/9038dfcc-8aec-40cf-96ee-548327ed375a.mp4",
+          "rationale": "Components of the GRR model for student independence"
+        }
+      ]
+    },
+    "M1": {
+      "indicator_code": "M1",
+      "indicator_name": "Mathematical Discourse & Reasoning",
+      "tier": "tier_4_subject_specific",
+      "subject": "mathematics",
+      "priority": "P1",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L1",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to diagnose and correct common misconceptions in basic operations and number sense (e.g., borrowing, carrying errors).",
+          "training_title": "Misconceptions in basic operations",
+          "training_code": "CE_01_01 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/ff3e802e-214c-42fe-9e69-f34485eb054e.mp4",
+          "rationale": "No dedicated math discourse LO exists. Misconceptions LO is the best entry — gives a practical reason to ask 'why does that work?' — first step toward reasoning discourse.",
+          "shared_with": ["PIC-3"],
+          "flag": "partial"
+        },
+        {
+          "rank": 2,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Use Socratic questioning to engage students in inquiry-based learning.",
+          "training_title": "Use Socratic Questioning",
+          "training_code": "PP-02-03-V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8b9ef0d9-53e6-4a73-ac9e-5919f7553b9b.mp4",
+          "rationale": "Closest available to math reasoning discourse — probing follow-ups after student responses.",
+          "shared_with": ["PIC-4"],
+          "flag": "partial"
+        },
+        {
+          "rank": 3,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Design tasks that require students to generate and compare multiple approaches to a problem.",
+          "training_title": "Encouraging Multiple Solutions in the Classroom",
+          "training_code": "PP-02-06",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/5705ed42-938c-4353-bdec-ee6c1f7f3c9c.mp4",
+          "rationale": "Multiple solution approaches IS the core of mathematical discourse. Directly builds the 'did anyone solve it differently?' habit."
+        }
+      ]
+    },
+    "M2": {
+      "indicator_code": "M2",
+      "indicator_name": "Problem-Solving & Productive Struggle",
+      "tier": "tier_4_subject_specific",
+      "subject": "mathematics",
+      "priority": "P2",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L1",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to use open-ended questions to encourage critical thinking and student expression during lessons.",
+          "training_title": "Open-Ended Questions",
+          "training_code": "PP_01_05 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/9f4e5b0d-4037-4f3d-bb4f-619512aaab6e.mp4",
+          "rationale": "No productive-struggle LO exists. Open-ended questioning introduces the value of student thinking time — first step toward tolerating productive difficulty.",
+          "shared_with": ["PIC-4", "S1"],
+          "flag": "partial"
+        },
+        {
+          "rank": 2,
+          "level": "L1",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to use strategies such as Think-Pair-Share and brainstorming to promote critical thinking, creative idea generation, and meaningful student discussion in every lesson.",
+          "training_title": "ہر سبق میں تنقیدی سوچ اور تخلیقی صلاحیتیں: پاکستانی اساتذہ کے لیے ایک عملی رہنما",
+          "training_code": "2 - Pedagogical Practice - 702",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/94f1d9f4-c147-4556-9900-f6d36f3767a2.pdf",
+          "rationale": "TPS structures struggle time — students grapple in pairs before sharing, giving the teacher a management framework for productive struggle.",
+          "shared_with": ["S2"]
+        },
+        {
+          "rank": 3,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Design and facilitate small-group problem-solving tasks with peer accountability and shared outcomes.",
+          "training_title": "Peer Problem-Solving",
+          "training_code": "PP-02-05",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8cd2e511-0460-487b-97f6-69c14f96cb4c.mp4",
+          "rationale": "Small-group problem-solving embeds productive struggle as a designed experience — teacher becomes facilitator, not answer-provider.",
+          "shared_with": ["S1"]
+        }
+      ]
+    },
+    "S1": {
+      "indicator_code": "S1",
+      "indicator_name": "Inquiry-Based Approach",
+      "tier": "tier_4_subject_specific",
+      "subject": "science",
+      "priority": "P1",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Design and facilitate an inquiry-based learning experience driven by a real-world question.",
+          "training_title": "inquiry-based learning",
+          "training_code": "PP-02-02",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/3708bb74-7e56-4798-b085-64b0b0196edb.mp4",
+          "rationale": "No L0/L1 LO addresses inquiry sequence. L2 is the only direct match — it structurally requires starting with a question, preventing the teacher from giving the answer first.",
+          "shared_with": ["PIA-2"]
+        },
+        {
+          "rank": 2,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Design and facilitate small-group problem-solving tasks with peer accountability and shared outcomes.",
+          "training_title": "Peer Problem-Solving",
+          "training_code": "PP-02-05",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8cd2e511-0460-487b-97f6-69c14f96cb4c.mp4",
+          "rationale": "If inquiry design is still not forming, structured small-group problem-solving gives a safer format — students grapple with a scenario together before teacher explains.",
+          "shared_with": ["M2"]
+        },
+        {
+          "rank": 3,
+          "level": "L1",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to use open-ended questions to encourage critical thinking and student expression during lessons.",
+          "training_title": "Open-Ended Questions",
+          "training_code": "PP_01_05 V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/9f4e5b0d-4037-4f3d-bb4f-619512aaab6e.mp4",
+          "rationale": "Stepping back: if L2 inquiry is not landing, the prerequisite skill of open questioning may be missing. Build from L1.",
+          "shared_with": ["PIC-4", "M2"]
+        }
+      ]
+    },
+    "S2": {
+      "indicator_code": "S2",
+      "indicator_name": "Science Talk & Student Sense-Making",
+      "tier": "tier_4_subject_specific",
+      "subject": "science",
+      "priority": "P2",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L1",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Teacher will be able to use strategies such as Think-Pair-Share and brainstorming to promote critical thinking, creative idea generation, and meaningful student discussion in every lesson.",
+          "training_title": "ہر سبق میں تنقیدی سوچ اور تخلیقی صلاحیتیں: پاکستانی اساتذہ کے لیے ایک عملی رہنما",
+          "training_code": "2 - Pedagogical Practice - 702",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/94f1d9f4-c147-4556-9900-f6d36f3767a2.pdf",
+          "rationale": "No science-talk LO exists. TPS is the most effective structural break from pure IRE — students discuss science ideas in pairs before sharing.",
+          "shared_with": ["M2"],
+          "flag": "partial"
+        },
+        {
+          "rank": 2,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Facilitate student-led discussions to assign roles and responsibilities in group projects.",
+          "training_title": "Group Projects",
+          "training_code": "PP-02-04",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/d42ac898-3cd0-45d2-85a6-322296ee46c9.mp4",
+          "rationale": "Student-led discussion removes teacher from the centre of talk — closest available for a dialogic science classroom.",
+          "flag": "partial"
+        },
+        {
+          "rank": 3,
+          "level": "L2",
+          "domain": "Pedagogical Practice",
+          "training_lo": "Design and facilitate small-group problem-solving tasks with peer accountability and shared outcomes.",
+          "training_title": "Peer Problem-Solving",
+          "training_code": "PP-02-05",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8cd2e511-0460-487b-97f6-69c14f96cb4c.mp4",
+          "rationale": "Small-group science tasks create structured science talk by necessity — students must discuss observations and conclusions together.",
+          "shared_with": ["S1", "M2"]
+        }
+      ]
+    },
+    "L1": {
+      "indicator_code": "L1",
+      "indicator_name": "Explicit Phonics / Decoding",
+      "tier": "tier_4_subject_specific",
+      "subject": "literacy",
+      "priority": "P1",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to identify and teach individual letter sounds, vowels, blends, digraphs (e.g., sh, ch) using phonics-based strategies.",
+          "training_title": "Phonic strategies part 1",
+          "training_code": "CE_00_07_V02",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/df1d0990-f9d1-47e2-ae13-4e4b6a8e1f22.mp4",
+          "rationale": "No pedagogical workaround substitutes for phonics knowledge. Most direct and only appropriate entry for English.",
+          "shared_with": ["SI3"]
+        },
+        {
+          "rank": 2,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to model phoneme segmentation and blending techniques using everyday classroom examples (e.g., /k/ /æ/ /t/ = cat).",
+          "training_title": "Blending and Segmenting",
+          "training_code": "CE_00_08_V02",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/071df75b-f133-4844-b93c-493b7c112488.mp4",
+          "rationale": "If sounds are taught but blending is absent, this LO specifically addresses the blending and segmentation methodology — distinct from sound-letter knowledge."
+        },
+        {
+          "rank": 3,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to identify the key components of phonological awareness (e.g., vowels, phonics and CVC words).",
+          "training_title": "Key components of phonological awareness",
+          "training_code": "CE_00_09_V02",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/db77433d-9929-4ef8-9125-fc93f01c97d3.mp4",
+          "rationale": "If phonics instruction still incomplete, phonological awareness as a broader framework gives the teacher the conceptual map of how sounds work in English."
+        },
+        {
+          "rank": 4,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to teach Harakaat (زیر، زبر، پیش) and their effect on pronunciation and meaning through guided practice.",
+          "training_title": "اردو کی حرکات",
+          "training_code": "CE_00_15",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/d4891abf-30fe-4def-8dfd-4dc5601cea3d.mp4",
+          "rationale": "Harakaat IS Urdu phonics — equivalent of sound-letter correspondence. Entry point for Urdu phonics instruction.",
+          "shared_with": ["SI3"]
+        },
+        {
+          "rank": 5,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to conduct Arkaan Saazi lessons (دو حرفی اور تین حرفی ارکان) to help children blend sounds into basic words.",
+          "training_title": "ارکان سازی",
+          "training_code": "CE_00_16",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/3c5d67d7-6188-4b64-9953-cdde51f88bd6.mp4",
+          "rationale": "Urdu blending — equivalent of English blending methodology. Distinct skill from harakaat."
+        }
+      ]
+    },
+    "L2": {
+      "indicator_code": "L2",
+      "indicator_name": "Comprehension Strategy Instruction",
+      "tier": "tier_4_subject_specific",
+      "subject": "literacy",
+      "priority": "P2",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L0",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to ask comprehension questions before, during, and after reading to support meaning-making.",
+          "training_title": "Guided Reading",
+          "training_code": "CE_00_13_V02",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/94e93c80-39d3-4996-bc4a-e8fe55fbd96d.mp4",
+          "rationale": "Entry point. Teacher likely only asks post-reading questions. Before / during / after questioning builds comprehension as an ongoing process, not a post-reading test."
+        },
+        {
+          "rank": 2,
+          "level": "L2",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to explicitly teach comprehension strategies (predicting, inferring, summarizing, visualizing) and monitor their use during reading.",
+          "training_title": "Comprehension Strategies",
+          "training_code": "CE-02-07-V2",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/13fedd6f-d06b-4a74-9bc3-f1c29db3a9f4.mp4",
+          "rationale": "If before/during/after questioning is forming but strategy instruction is absent, this LO addresses the qualitative shift — from asking questions to teaching the thinking process behind them."
+        },
+        {
+          "rank": 3,
+          "level": "L2",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to connect vocabulary instruction to reading and writing tasks using word webs, semantic maps, and context applications.",
+          "training_title": "Vocabulary Instructions to Reading and Writing",
+          "training_code": "CE-02-08",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/b78563f0-e2fe-4828-af23-4d4f3f1b88b5.mp4",
+          "rationale": "If comprehension instruction still weak, vocabulary–reading integration is the next layer — students comprehend better when vocabulary is taught in reading context.",
+          "shared_with": ["L3"]
+        }
+      ]
+    },
+    "L3": {
+      "indicator_code": "L3",
+      "indicator_name": "Reading-Writing Connections",
+      "tier": "tier_4_subject_specific",
+      "subject": "literacy",
+      "priority": "P3",
+      "training_sequence": [
+        {
+          "rank": 1,
+          "level": "L1",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to analyze and plan multi-skill literacy lessons that integrate reading, writing, and oral language.",
+          "training_title": "Multi-Literacy Skills",
+          "training_code": "CE-01-10-L1",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/e1f40a67-1a44-4990-a448-a6b20b9d53e2.mp4",
+          "rationale": "Most direct match. Builds the habit of designing reading and writing as a connected sequence. Applicable across English and Urdu."
+        },
+        {
+          "rank": 2,
+          "level": "L2",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to connect vocabulary instruction to reading and writing tasks using word webs, semantic maps, and context applications.",
+          "training_title": "Vocabulary Instructions to Reading and Writing",
+          "training_code": "CE-02-08",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/b78563f0-e2fe-4828-af23-4d4f3f1b88b5.mp4",
+          "rationale": "Vocabulary as a thread connecting reading and writing gives a concrete linking mechanism — words encountered in reading become words used in writing.",
+          "shared_with": ["L2"]
+        },
+        {
+          "rank": 3,
+          "level": "L2",
+          "domain": "Content Expertise",
+          "training_lo": "Teacher will be able to incorporate listening texts and oral narratives into literacy lessons to build auditory comprehension.",
+          "training_title": "Integrating listening texts and oral narratives into literacy lessons to build auditory comprehension",
+          "training_code": "CE-02-09",
+          "training_url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/1926b378-dcd3-4903-be0f-4a0536a2abbf.mp4",
+          "rationale": "Listening → discussing → writing is the fullest literacy integration. Adds oral language as a third strand reinforcing the reading-writing connection."
+        }
+      ]
+    }
+  }
+}

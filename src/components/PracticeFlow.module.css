@@ -1,0 +1,407 @@
+.container {
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background-color: #ecf0f1;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3498db, #2980b9);
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  display: block;
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.questionCard {
+  background-color: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.questionCard h3 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.scenarioBox {
+  background-color: #e3f2fd;
+  border-left: 4px solid #1976d2;
+  padding: 1.5rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.scenarioBox h3 {
+  margin-top: 0;
+  color: #1565c0;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.scenarioBox p {
+  margin: 0.5rem 0 0 0;
+  color: #0d47a1;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.promptBox {
+  background-color: #f3e5f5;
+  border-left: 4px solid #7b1fa2;
+  padding: 1.5rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.promptBox h3 {
+  margin-top: 0;
+  color: #6a1b9a;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.promptBox p {
+  margin: 0.5rem 0 0 0;
+  color: #4a148c;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.inputSection {
+  margin-bottom: 2rem;
+}
+
+.inputSection label {
+  display: block;
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.inputTypeButtons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.inputTypeBtn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #bdc3c7;
+  background-color: white;
+  color: #2c3e50;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.inputTypeBtn:hover:not(:disabled) {
+  border-color: #3498db;
+  background-color: #ecf7fd;
+}
+
+.inputTypeBtn.active {
+  background-color: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.inputTypeBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.recordingBox {
+  background-color: #fff3cd;
+  border: 2px dashed #ffc107;
+  padding: 2rem;
+  border-radius: 4px;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.recordingIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ff6b6b;
+  margin-bottom: 1rem;
+}
+
+.recordingDot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ff6b6b;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.recordingBox p {
+  color: #856404;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+  transition: border-color 0.3s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.textarea:disabled {
+  background-color: #ecf0f1;
+  cursor: not-allowed;
+}
+
+.rubric {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #3498db;
+}
+
+.rubric h4 {
+  margin: 0 0 0.75rem 0;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.rubric ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rubric li {
+  color: #555;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.rubric li:before {
+  content: '→ ';
+  color: #3498db;
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.submitBtn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.submitBtn:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.evaluationCard {
+  background-color: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.evaluationCard h3 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+}
+
+.scoreDisplay {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.scoreCircle {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.levelYES {
+  background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3) !important;
+}
+
+.levelPARTIAL {
+  background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3) !important;
+}
+
+.levelNO {
+  background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3) !important;
+}
+
+.levelBadge {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: white;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.scoreValue {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.feedback {
+  background-color: #d5f4e6;
+  border-left: 4px solid #27ae60;
+  padding: 1.5rem;
+  border-radius: 4px;
+  margin: 1.5rem 0;
+}
+
+.feedback p {
+  margin: 0;
+  color: #155724;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.rubricCheck {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 4px;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.rubricCheck h4 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.rubricCheck ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rubricCheck li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.checkmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.checkmark.pass {
+  background-color: #27ae60;
+  color: white;
+}
+
+.checkmark.partial {
+  background-color: #f39c12;
+  color: white;
+}
+
+.navigation {
+  margin-top: 2rem;
+}
+
+.nextBtn {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.nextBtn:hover {
+  background-color: #229954;
+}

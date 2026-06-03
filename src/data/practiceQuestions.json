@@ -1,0 +1,122 @@
+{
+  "SI1": [
+    {
+      "id": "SI1-q1",
+      "indicatorCode": "SI1",
+      "scenario": "You are teaching Grade 3 Math. Today's topic is adding two-digit numbers. Students have opened their notebooks and are sitting quietly. You are about to start the class.",
+      "prompt": "Start the class. Say whatever you would say in the first 2 to 3 minutes.",
+      "rubricCriteria": [
+        "Clear learning objective stated",
+        "Students understand what they will learn",
+        "Connection to prior knowledge made"
+      ]
+    },
+    {
+      "id": "SI1-q2",
+      "indicatorCode": "SI1",
+      "scenario": "In your next lesson, practice stating the learning objective clearly at the beginning.",
+      "prompt": "How will you communicate the lesson goal to students so they know exactly what to focus on?",
+      "rubricCriteria": [
+        "Specific and measurable objective",
+        "Language accessible to students",
+        "Checked understanding before proceeding"
+      ]
+    }
+  ],
+  "SI2": [
+    {
+      "id": "SI2-q1",
+      "indicatorCode": "SI2",
+      "scenario": "You are teaching a lesson on fractions. You've introduced the concept, shown examples, and now students are doing practice problems. Halfway through, you notice several students look confused.",
+      "prompt": "How would you respond to keep the lesson moving forward logically?",
+      "rubricCriteria": [
+        "Identify the confusion point",
+        "Provide additional scaffolding",
+        "Maintain lesson flow and pacing"
+      ]
+    },
+    {
+      "id": "SI2-q2",
+      "indicatorCode": "SI2",
+      "scenario": "Plan your next lesson with a clear structure in mind.",
+      "prompt": "What would be your opening, main instruction, practice, and closing? How does each part lead to the next?",
+      "rubricCriteria": [
+        "Clear beginning, middle, end structure",
+        "Each segment connects logically",
+        "Time allocated appropriately"
+      ]
+    }
+  ],
+  "SI3": [
+    {
+      "id": "SI3-q1",
+      "indicatorCode": "SI3",
+      "scenario": "You are teaching an English reading lesson. Today you are teaching the concept of 'main idea' for the first time. Students have never heard this term before. You have just read a short paragraph to the class. Students are looking at you, waiting.",
+      "prompt": "Explain what 'main idea' means and tell students how they will find the main idea in the paragraph.",
+      "rubricCriteria": [
+        "Definition is accurate and age-appropriate",
+        "Examples support the explanation",
+        "Students can apply the concept"
+      ]
+    },
+    {
+      "id": "SI3-q2",
+      "indicatorCode": "SI3",
+      "scenario": "You are about to teach a lesson on a topic you have limited experience with.",
+      "prompt": "How would you prepare to teach this accurately? What would you check to ensure your content is correct?",
+      "rubricCriteria": [
+        "Identified knowledge gaps",
+        "Used reliable resources to verify",
+        "Planned how to present accurately"
+      ]
+    }
+  ],
+  "PIC-1": [
+    {
+      "id": "PIC-1-q1",
+      "indicatorCode": "PIC-1",
+      "scenario": "You want students to practice identifying main ideas (a cognitive skill requiring analysis). You've planned the following: students copy main idea sentences from the text into their notebooks.",
+      "prompt": "Is this activity aligned with the learning objective? Why or why not? What would you change?",
+      "rubricCriteria": [
+        "Evaluates cognitive demand",
+        "Identifies mismatch between task and objective",
+        "Suggests appropriate alternative task"
+      ]
+    },
+    {
+      "id": "PIC-1-q2",
+      "indicatorCode": "PIC-1",
+      "scenario": "Review a lesson you taught recently.",
+      "prompt": "What was your main learning objective? Did the activities require students to do what you intended? Explain.",
+      "rubricCriteria": [
+        "Identifies objective and activities clearly",
+        "Analyzes alignment thoughtfully",
+        "Shows willingness to reflect and adjust"
+      ]
+    }
+  ],
+  "PIA-3": [
+    {
+      "id": "PIA-3-q1",
+      "indicatorCode": "PIA-3",
+      "scenario": "In your next lesson, you have students at different levels: some struggling to grasp the concept, some at grade level, and some ready for extension.",
+      "prompt": "How would you differentiate your instruction verbally (not through worksheets) so each group stays engaged?",
+      "rubricCriteria": [
+        "Provides different explanations for different groups",
+        "Maintains engagement for all levels",
+        "Balances support without holding others back"
+      ]
+    },
+    {
+      "id": "PIA-3-q2",
+      "indicatorCode": "PIA-3",
+      "scenario": "Think about your most recent whole-class instruction time.",
+      "prompt": "Did all students understand at the same pace? If not, what specifically did you do to support the students who needed more help?",
+      "rubricCriteria": [
+        "Honest reflection on student understanding",
+        "Identifies specific differentiation strategy",
+        "Shows awareness of equity and access"
+      ]
+    }
+  ]
+}
