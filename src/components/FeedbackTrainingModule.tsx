@@ -138,15 +138,17 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
 
             {observation.improvement_areas && observation.improvement_areas.length > 0 && (
               <div className={styles.improvementAreas}>
-                <h3>Focus Areas</h3>
+                <h3>Focus Area</h3>
                 <ul>
-                  {observation.improvement_areas.map((area) => (
-                    <li key={area.indicator_code}>
-                      <strong>{area.indicator_name}</strong>
-                      <span className={styles.score}>{area.score}</span>
-                      <p>Priority: {area.priority} | Level: {area.escalation_level}</p>
-                    </li>
-                  ))}
+                  {observation.improvement_areas
+                    .filter((area) => area.indicator_code === indicatorCode)
+                    .map((area) => (
+                      <li key={area.indicator_code}>
+                        <strong>{area.indicator_name}</strong>
+                        <span className={styles.score}>{area.score}</span>
+                        <p>Priority: {area.priority} | Level: {area.escalation_level}</p>
+                      </li>
+                    ))}
                 </ul>
               </div>
             )}
