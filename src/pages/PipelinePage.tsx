@@ -36,6 +36,7 @@ interface ResourceState {
 export default function PipelinePage() {
   const [trainings, setTrainings] = useState<TrainingItem[]>([]);
   const [allResources, setAllResources] = useState<Array<{ resource: TrainingResource; indicator: string; training: TrainingItem }>>([]);
+  const [selectedIndicator, setSelectedIndicator] = useState<string>('');
   const [selectedResourceCode, setSelectedResourceCode] = useState<string>('');
   const [resourceStates, setResourceStates] = useState<Map<string, ResourceState>>(new Map());
   const [systemPrompt, setSystemPrompt] = useState<string>(questionGenPrompt.systemPrompt);
@@ -73,9 +74,9 @@ export default function PipelinePage() {
     });
     setResourceStates(states);
 
-    // Set first resource as default
-    if (allResourcesFlat.length > 0) {
-      setSelectedResourceCode(allResourcesFlat[0].resource.code);
+    // Set first indicator as default
+    if (trainingsArray.length > 0) {
+      setSelectedIndicator(trainingsArray[0].indicator);
     }
 
     // Load saved system prompt from localStorage if exists
@@ -176,8 +177,12 @@ export default function PipelinePage() {
   const selectedResourceData = allResources.find((r) => r.resource.code === selectedResourceCode);
   const selectedResource = selectedResourceData?.resource;
   const selectedTraining = selectedResourceData?.training;
-  const selectedIndicator = selectedResourceData?.indicator;
   const state = selectedResourceCode ? resourceStates.get(selectedResourceCode) : null;
+
+  // Filter trainings by selected indicator
+  const filteredResources = selectedIndicator
+    ? allResources.filter((r) => r.indicator === selectedIndicator)
+    : [];
 
   return (
     <div className="pipeline-page">
@@ -220,20 +225,43 @@ export default function PipelinePage() {
 
         {/* Training Selection and Generation */}
         <div className="generation-section">
-          <div className="training-selector">
-            <label>Select Training Resource:</label>
-            <select
-              value={selectedResourceCode}
-              onChange={(e) => setSelectedResourceCode(e.target.value)}
-              className="training-dropdown"
-            >
-              <option value="">-- Choose a training --</option>
-              {allResources.map(({ resource, training }) => (
-                <option key={resource.code} value={resource.code}>
-                  {training.name} → {resource.title}
-                </option>
-              ))}
-            </select>
+          <div className="selection-dropdowns">
+            <div className="training-selector">
+              <label>1. Select Indicator:</label>
+              <select
+                value={selectedIndicator}
+                onChange={(e) => {
+                  setSelectedIndicator(e.target.value);
+                  setSelectedResourceCode(''); // Reset training selection
+                }}
+                className="training-dropdown"
+              >
+                <option value="">-- Choose an indicator --</option>
+                {trainings.map((training) => (
+                  <option key={training.indicator} value={training.indicator}>
+                    {training.indicator} - {training.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedIndicator && (
+              <div className="training-selector">
+                <label>2. Select Training Resource:</label>
+                <select
+                  value={selectedResourceCode}
+                  onChange={(e) => setSelectedResourceCode(e.target.value)}
+                  className="training-dropdown"
+                >
+                  <option value="">-- Choose a training --</option>
+                  {filteredResources.map(({ resource }) => (
+                    <option key={resource.code} value={resource.code}>
+                      {resource.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {selectedResource && selectedTraining && state && (
