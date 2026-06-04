@@ -13,7 +13,23 @@ interface FlaggedIndicator {
   indicator_code: string;
   flag_count: number;
   escalation_level: number;
+  priority: number;
 }
+
+// Indicator name mapping
+const indicatorNames: Record<string, string> = {
+  'SI1': 'Instructional Clarity',
+  'SI2': 'Logical Flow',
+  'SI3': 'Subject Content Accuracy',
+  'PIC-1': 'Activities & Tasks Alignment',
+  'PIC-3': 'Understanding Student Misconceptions',
+  'PIC-4': 'Quality Questioning',
+  'PIA-3': 'Catering to Learning Levels',
+  'PIA-4': 'Responsive Re-explanation',
+  'M1': 'Mathematical Discourse & Reasoning',
+  'L1': 'Explicit Phonics / Decoding',
+  'S1': 'Inquiry-Based Approach',
+};
 
 export default function TestPage() {
 
@@ -165,7 +181,7 @@ export default function TestPage() {
                         <div className="flagged-indicator">
                           <h4>🎯 Focus Area (Flagged {flaggedIndicators[0]?.flag_count}+ times)</h4>
                           <div className="indicator-badge">
-                            {highestPriorityIndicator}
+                            {indicatorNames[highestPriorityIndicator] || highestPriorityIndicator}
                           </div>
                           <p className="escalation">
                             Escalation Level: {flaggedIndicators[0]?.escalation_level}/5
@@ -174,7 +190,7 @@ export default function TestPage() {
                             className="start-training-btn"
                             onClick={handleStartTraining}
                           >
-                            📚 Start Training for {highestPriorityIndicator}
+                            📚 Start Training for {indicatorNames[highestPriorityIndicator] || highestPriorityIndicator}
                           </button>
                         </div>
                       )}

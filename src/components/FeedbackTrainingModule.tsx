@@ -6,6 +6,21 @@ import { PracticeFlow } from './PracticeFlow';
 import { CompletionScreen } from './CompletionScreen';
 import styles from './FeedbackTrainingModule.module.css';
 
+// Indicator name mapping
+const indicatorNames: Record<string, string> = {
+  'SI1': 'Instructional Clarity',
+  'SI2': 'Logical Flow',
+  'SI3': 'Subject Content Accuracy',
+  'PIC-1': 'Activities & Tasks Alignment',
+  'PIC-3': 'Understanding Student Misconceptions',
+  'PIC-4': 'Quality Questioning',
+  'PIA-3': 'Catering to Learning Levels',
+  'PIA-4': 'Responsive Re-explanation',
+  'M1': 'Mathematical Discourse & Reasoning',
+  'L1': 'Explicit Phonics / Decoding',
+  'S1': 'Inquiry-Based Approach',
+};
+
 interface FeedbackTrainingModuleProps {
   teacherId: string;
   indicatorCode: IndicatorCode;
@@ -25,6 +40,9 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
   const [training, setTraining] = useState<any>(null);
   const [practiceQuestions, setPracticeQuestions] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  // Get indicator name from mapping
+  const indicatorName = indicatorNames[indicatorCode] || indicatorCode;
 
   useEffect(() => {
     const loadData = async () => {
@@ -103,8 +121,8 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
       {state === 'feedback' && (
         <div className={styles.feedbackSection}>
           <div className={styles.header}>
-            <h2>Your Feedback - {indicatorCode}</h2>
-            <p className={styles.subtitle}>Flagged 3+ times - Let's improve together</p>
+            <h2>Your Feedback - {indicatorName}</h2>
+            <p className={styles.subtitle}>Focus Area: {indicatorName}</p>
           </div>
 
           <div className={styles.feedbackContent}>
@@ -139,7 +157,7 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
               className={styles.primaryBtn}
               onClick={() => setState('training')}
             >
-              View Training Resources →
+              Start Training →
             </button>
             {onClose && (
               <button className={styles.secondaryBtn} onClick={onClose}>
