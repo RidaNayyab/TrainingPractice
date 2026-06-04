@@ -145,7 +145,6 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
                     .map((area) => (
                       <li key={area.indicator_code}>
                         <strong>{area.indicator_name}</strong>
-                        <span className={styles.score}>{area.score}</span>
                       </li>
                     ))}
                 </ul>
