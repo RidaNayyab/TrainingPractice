@@ -146,7 +146,6 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
                       <li key={area.indicator_code}>
                         <strong>{area.indicator_name}</strong>
                         <span className={styles.score}>{area.score}</span>
-                        <p>Priority: {area.priority} | Level: {area.escalation_level}</p>
                       </li>
                     ))}
                 </ul>
