@@ -34,7 +34,7 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
   indicatorCode,
   onClose,
 }) => {
-  const [state, setState] = useState<ModuleState>('training');
+  const [state, setState] = useState<ModuleState>('feedback');
   const [loading, setLoading] = useState(true);
   const [observation, setObservation] = useState<Observation | null>(null);
   const [training, setTraining] = useState<any>(null);
