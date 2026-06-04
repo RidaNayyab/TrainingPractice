@@ -193,21 +193,7 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
         <PracticeFlow
           indicatorCode={indicatorCode}
           questions={practiceQuestions}
-          onComplete={async () => {
-            // Fetch next training to see if there are more
-            try {
-              const nextTraining = await apiService.getTraining(indicatorCode, teacherId);
-              if (nextTraining.allCompleted) {
-                setState('completion');
-              } else {
-                // Show next training instead
-                setTraining(nextTraining);
-                setState('training');
-              }
-            } catch {
-              setState('completion');
-            }
-          }}
+          onComplete={() => onClose?.()}
         />
       )}
 
