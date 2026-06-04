@@ -22,11 +22,13 @@ const trainingsPath = path.join(path.dirname(new URL(import.meta.url).pathname.r
 const matrixPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/indicator-priority-matrix.json');
 const practiceQuestionsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/practiceQuestions.json');
 const rubricPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/evaluationRubric.json');
+const questionGenPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/questionGenerationPrompt.json');
 
 const trainings = JSON.parse(fs.readFileSync(trainingsPath, 'utf-8'));
 const priorityMatrix = JSON.parse(fs.readFileSync(matrixPath, 'utf-8'));
 const practiceQuestions = JSON.parse(fs.readFileSync(practiceQuestionsPath, 'utf-8'));
 const evaluationRubric = JSON.parse(fs.readFileSync(rubricPath, 'utf-8'));
+const questionGenConfig = JSON.parse(fs.readFileSync(questionGenPath, 'utf-8'));
 
 // Debug: Log SI1 and SI3 priority ranks at startup
 const si1Rank = priorityMatrix.tiers.tier_1_structural.indicators.SI1.priority_rank;
@@ -347,25 +349,79 @@ app.get('/api/training/:code', (req, res) => {
   });
 });
 
-app.get('/api/practice/:code', (req, res) => {
+app.get('/api/practice/:code', async (req, res) => {
   const code = req.params.code;
-  const questions = practiceQuestions[code] || [];
-  res.json(questions.length > 0 ? questions : [
-    {
-      id: `${code}-q1`,
-      indicatorCode: code,
-      scenario: `Scenario for ${code}`,
-      prompt: `Describe your approach:`,
-      rubricCriteria: ['Clear explanation', 'Specific example', 'Connection to learning'],
-    },
-    {
-      id: `${code}-q2`,
-      indicatorCode: code,
-      scenario: `In your next lesson, apply ${code}`,
-      prompt: `How would you implement this?`,
-      rubricCriteria: ['Activity description', 'Direct connection', 'Pedagogical reasoning'],
-    },
-  ]);
+  const dbConn = new Client({
+    host: process.env.PGHOST,
+    port: parseInt(process.env.PGPORT || '5432'),
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    database: process.env.PGDATABASE,
+  });
+
+  try {
+    await dbConn.connect();
+
+    // Query for generated questions first
+    const result = await dbConn.query(
+      `SELECT question_id, scenario, prompt, rubric_criteria FROM generated_practice_questions
+       WHERE $1 = ANY(indicator_codes) ORDER BY question_id`,
+      [code]
+    );
+
+    await dbConn.end();
+
+    if (result.rows.length > 0) {
+      const questions = result.rows.map((row: any) => ({
+        id: row.question_id,
+        indicatorCode: code,
+        scenario: row.scenario,
+        prompt: row.prompt,
+        rubricCriteria: row.rubric_criteria,
+      }));
+      return res.json(questions);
+    }
+
+    // Fall back to hardcoded questions
+    const questions = practiceQuestions[code] || [];
+    res.json(questions.length > 0 ? questions : [
+      {
+        id: `${code}-q1`,
+        indicatorCode: code,
+        scenario: `Scenario for ${code}`,
+        prompt: `Describe your approach:`,
+        rubricCriteria: ['Clear explanation', 'Specific example', 'Connection to learning'],
+      },
+      {
+        id: `${code}-q2`,
+        indicatorCode: code,
+        scenario: `In your next lesson, apply ${code}`,
+        prompt: `How would you implement this?`,
+        rubricCriteria: ['Activity description', 'Direct connection', 'Pedagogical reasoning'],
+      },
+    ]);
+  } catch (err) {
+    console.error('[ERROR] Practice questions query failed:', err);
+    // Fall back to hardcoded questions on error
+    const code = req.params.code;
+    const questions = practiceQuestions[code] || [];
+    res.json(questions.length > 0 ? questions : [
+      {
+        id: `${code}-q1`,
+        indicatorCode: code,
+        scenario: `Scenario for ${code}`,
+        prompt: `Describe your approach:`,
+        rubricCriteria: ['Clear explanation', 'Specific example', 'Connection to learning'],
+      },
+      {
+        id: `${code}-q2`,
+        indicatorCode: code,
+        scenario: `In your next lesson, apply ${code}`,
+        prompt: `How would you implement this?`,
+        rubricCriteria: ['Activity description', 'Direct connection', 'Pedagogical reasoning'],
+      },
+    ]);
+  }
 });
 
 app.post('/api/training/complete', (req, res) => {
@@ -374,6 +430,135 @@ app.post('/api/training/complete', (req, res) => {
 
 app.post('/api/practice/response', (req, res) => {
   res.json({ success: true });
+});
+
+// Generate practice questions using Claude AI
+app.post('/api/generate-questions', async (req, res) => {
+  try {
+    const { trainingCode, indicatorCode, learningOutcome, context, rationale } = req.body;
+
+    if (!trainingCode || !learningOutcome) {
+      return res.status(400).json({ error: 'trainingCode and learningOutcome are required' });
+    }
+
+    const questionCount = questionGenConfig.questionsPerTraining || 2;
+    const userMessage = `
+Training Code: ${trainingCode}
+Indicator: ${indicatorCode}
+Learning Outcome: ${learningOutcome}
+Context: ${context || 'N/A'}
+Training Rationale: ${rationale || 'N/A'}
+
+Generate exactly ${questionCount} practice questions based on this training. Each question should be scenario-based and test the teacher's ability to apply the learning.
+
+Format your response as a valid JSON array with NO markdown, NO code blocks:
+[
+  {
+    "scenario": "...",
+    "prompt": "...",
+    "rubricCriteria": ["criterion 1", "criterion 2", "criterion 3"]
+  }
+]
+`;
+
+    const message = await client.messages.create({
+      model: questionGenConfig.config.model || 'claude-opus-4-7',
+      max_tokens: questionGenConfig.config.maxTokens || 500,
+      temperature: questionGenConfig.config.temperature || 0.7,
+      system: questionGenConfig.systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+    });
+
+    const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+    let questions;
+
+    try {
+      questions = JSON.parse(responseText);
+    } catch (e) {
+      // Try to extract JSON from response
+      const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        questions = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('Failed to parse Claude response as JSON');
+      }
+    }
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(500).json({ error: 'Claude did not generate valid questions' });
+    }
+
+    console.log(`✅ Generated ${questions.length} questions for ${trainingCode}`);
+    res.json({ questions });
+  } catch (err) {
+    console.error('[ERROR] Question generation failed:', err);
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Question generation failed' });
+  }
+});
+
+// Save generated questions to database
+app.post('/api/save-questions', async (req, res) => {
+  const dbConn = new Client({
+    host: process.env.PGHOST,
+    port: parseInt(process.env.PGPORT || '5432'),
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    database: process.env.PGDATABASE,
+  });
+
+  try {
+    const { trainingCode, indicatorCode, questions } = req.body;
+
+    if (!trainingCode || !questions || !Array.isArray(questions)) {
+      return res.status(400).json({ error: 'trainingCode and questions array are required' });
+    }
+
+    await dbConn.connect();
+
+    // Create table if it doesn't exist
+    await dbConn.query(`
+      CREATE TABLE IF NOT EXISTS generated_practice_questions (
+        id SERIAL PRIMARY KEY,
+        training_code VARCHAR(50) NOT NULL,
+        indicator_codes TEXT[] NOT NULL,
+        question_id VARCHAR(100) UNIQUE NOT NULL,
+        scenario TEXT NOT NULL,
+        prompt TEXT NOT NULL,
+        rubric_criteria TEXT[] NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Save each question
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      const questionId = `${trainingCode}-q${i + 1}`;
+
+      await dbConn.query(
+        `INSERT INTO generated_practice_questions
+         (training_code, indicator_codes, question_id, scenario, prompt, rubric_criteria)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (question_id) DO UPDATE SET
+         scenario = $4, prompt = $5, rubric_criteria = $6`,
+        [
+          trainingCode,
+          [indicatorCode],
+          questionId,
+          q.scenario,
+          q.prompt,
+          q.rubricCriteria,
+        ]
+      );
+    }
+
+    console.log(`✅ Saved ${questions.length} questions for ${trainingCode}`);
+    res.json({ success: true, count: questions.length });
+  } catch (err) {
+    console.error('[ERROR] Save questions failed:', err);
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Save questions failed' });
+  } finally {
+    await dbConn.end();
+  }
 });
 
 // Evaluate practice response using Claude AI with proper rubric
