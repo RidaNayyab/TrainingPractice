@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import trainingsData from '../data/trainings.json';
+import questionGenPrompt from '../data/questionGenerationPrompt.json';
 import '../styles/PipelinePage.css';
 
 interface TrainingResource {
@@ -34,8 +35,11 @@ interface ResourceState {
 
 export default function PipelinePage() {
   const [trainings, setTrainings] = useState<TrainingItem[]>([]);
+  const [allResources, setAllResources] = useState<Array<{ resource: TrainingResource; indicator: string; training: TrainingItem }>>([]);
+  const [selectedResourceCode, setSelectedResourceCode] = useState<string>('');
   const [resourceStates, setResourceStates] = useState<Map<string, ResourceState>>(new Map());
-  const [expandedResources, setExpandedResources] = useState<Set<string>>(new Set());
+  const [systemPrompt, setSystemPrompt] = useState<string>(questionGenPrompt.systemPrompt);
+  const [isEditingPrompt, setIsEditingPrompt] = useState<boolean>(false);
 
   useEffect(() => {
     // Convert trainingsData to array format
@@ -46,34 +50,40 @@ export default function PipelinePage() {
     }));
     setTrainings(trainingsArray);
 
-    // Initialize resource states
-    const states = new Map();
+    // Flatten resources with their training info
+    const allResourcesFlat: Array<{ resource: TrainingResource; indicator: string; training: TrainingItem }> = [];
     trainingsArray.forEach((training) => {
       training.resources.forEach((resource) => {
-        states.set(resource.code, {
-          learningOutcome: '',
-          context: '',
-          isGenerating: false,
-          generatedQuestions: null,
-          error: null,
-          isSaving: false,
-        });
+        allResourcesFlat.push({ resource, indicator: training.indicator, training });
+      });
+    });
+    setAllResources(allResourcesFlat);
+
+    // Initialize resource states
+    const states = new Map();
+    allResourcesFlat.forEach(({ resource }) => {
+      states.set(resource.code, {
+        learningOutcome: '',
+        context: '',
+        isGenerating: false,
+        generatedQuestions: null,
+        error: null,
+        isSaving: false,
       });
     });
     setResourceStates(states);
-  }, []);
 
-  const toggleResourceExpand = (code: string) => {
-    setExpandedResources((prev) => {
-      const next = new Set(prev);
-      if (next.has(code)) {
-        next.delete(code);
-      } else {
-        next.add(code);
-      }
-      return next;
-    });
-  };
+    // Set first resource as default
+    if (allResourcesFlat.length > 0) {
+      setSelectedResourceCode(allResourcesFlat[0].resource.code);
+    }
+
+    // Load saved system prompt from localStorage if exists
+    const saved = localStorage.getItem('systemPrompt');
+    if (saved) {
+      setSystemPrompt(saved);
+    }
+  }, []);
 
   const updateResourceState = (code: string, field: keyof ResourceState, value: any) => {
     setResourceStates((prev) => {
@@ -104,6 +114,7 @@ export default function PipelinePage() {
           learningOutcome: state.learningOutcome,
           context: state.context,
           rationale: resource.rationale,
+          systemPrompt: systemPrompt,
         }),
       });
 
@@ -156,117 +167,157 @@ export default function PipelinePage() {
     }
   };
 
+  const handleSaveSystemPrompt = () => {
+    localStorage.setItem('systemPrompt', systemPrompt);
+    setIsEditingPrompt(false);
+    alert('✅ System prompt saved!');
+  };
+
+  const selectedResourceData = allResources.find((r) => r.resource.code === selectedResourceCode);
+  const selectedResource = selectedResourceData?.resource;
+  const selectedTraining = selectedResourceData?.training;
+  const selectedIndicator = selectedResourceData?.indicator;
+  const state = selectedResourceCode ? resourceStates.get(selectedResourceCode) : null;
+
   return (
     <div className="pipeline-page">
       <header className="pipeline-header">
         <h1>📚 Training Questions Generation Pipeline</h1>
-        <p>Generate practice questions for each training resource using AI</p>
+        <p>Generate practice questions for training videos using AI</p>
       </header>
 
-      <div className="trainings-list">
-        {trainings.map((training) => (
-          <div key={training.indicator} className="training-section">
-            <h2>{training.name}</h2>
-            <div className="resources-grid">
-              {training.resources.map((resource) => {
-                const state = resourceStates.get(resource.code);
-                const isExpanded = expandedResources.has(resource.code);
-                return (
-                  <div key={resource.code} className="resource-card">
-                    <div className="resource-header">
-                      <div className="resource-info">
-                        <h3>{resource.title}</h3>
-                        <p className="resource-code">{resource.code}</p>
-                      </div>
-                      <button
-                        className="expand-btn"
-                        onClick={() => toggleResourceExpand(resource.code)}
-                      >
-                        {isExpanded ? '▼' : '▶'}
-                      </button>
-                    </div>
-
-                    {isExpanded && state && (
-                      <div className="resource-expanded">
-                        <div className="form-section">
-                          <label>Learning Outcome</label>
-                          <input
-                            type="text"
-                            placeholder="What should teachers be able to do after this training?"
-                            value={state.learningOutcome}
-                            onChange={(e) => updateResourceState(resource.code, 'learningOutcome', e.target.value)}
-                            className="input-field"
-                          />
-                        </div>
-
-                        <div className="form-section">
-                          <label>Context Summary</label>
-                          <textarea
-                            placeholder="Brief summary of the training video content (key points, focus areas)"
-                            value={state.context}
-                            onChange={(e) => updateResourceState(resource.code, 'context', e.target.value)}
-                            className="textarea-field"
-                            rows={3}
-                          />
-                        </div>
-
-                        {resource.rationale && (
-                          <div className="rationale-box">
-                            <strong>Rationale:</strong>
-                            <p>{resource.rationale}</p>
-                          </div>
-                        )}
-
-                        {state.error && <div className="error-message">{state.error}</div>}
-
-                        <button
-                          className="btn-generate"
-                          onClick={() => handleGenerateQuestions(resource, training)}
-                          disabled={state.isGenerating}
-                        >
-                          {state.isGenerating ? '⏳ Generating...' : '✨ Generate Questions'}
-                        </button>
-
-                        {state.generatedQuestions && (
-                          <div className="questions-preview">
-                            <h4>Generated Questions ({state.generatedQuestions.length})</h4>
-                            {state.generatedQuestions.map((q, idx) => (
-                              <div key={idx} className="question-preview">
-                                <div className="question-number">Q{idx + 1}</div>
-                                <div className="scenario">
-                                  <strong>Scenario:</strong> {q.scenario}
-                                </div>
-                                <div className="prompt">
-                                  <strong>Prompt:</strong> {q.prompt}
-                                </div>
-                                <div className="criteria">
-                                  <strong>Rubric Criteria:</strong>
-                                  <ul>
-                                    {q.rubricCriteria.map((c, i) => (
-                                      <li key={i}>{c}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              </div>
-                            ))}
-
-                            <button
-                              className="btn-save"
-                              onClick={() => handleSaveQuestions(resource, training)}
-                              disabled={state.isSaving}
-                            >
-                              {state.isSaving ? '💾 Saving...' : '✅ Save to Database'}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+      <div className="pipeline-container">
+        {/* System Prompt Section */}
+        <div className="system-prompt-section">
+          <div className="prompt-header">
+            <h3>🔧 System Prompt</h3>
+            <button
+              className="prompt-toggle-btn"
+              onClick={() => setIsEditingPrompt(!isEditingPrompt)}
+            >
+              {isEditingPrompt ? 'Cancel' : 'Edit'}
+            </button>
           </div>
-        ))}
+
+          {!isEditingPrompt ? (
+            <div className="prompt-display">
+              <p>{systemPrompt}</p>
+            </div>
+          ) : (
+            <div className="prompt-edit">
+              <textarea
+                value={systemPrompt}
+                onChange={(e) => setSystemPrompt(e.target.value)}
+                rows={8}
+                className="prompt-textarea"
+              />
+              <button className="btn-save-prompt" onClick={handleSaveSystemPrompt}>
+                💾 Save Prompt
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Training Selection and Generation */}
+        <div className="generation-section">
+          <div className="training-selector">
+            <label>Select Training Resource:</label>
+            <select
+              value={selectedResourceCode}
+              onChange={(e) => setSelectedResourceCode(e.target.value)}
+              className="training-dropdown"
+            >
+              <option value="">-- Choose a training --</option>
+              {allResources.map(({ resource, training }) => (
+                <option key={resource.code} value={resource.code}>
+                  {training.name} → {resource.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedResource && selectedTraining && state && (
+            <div className="form-container">
+              <div className="training-details">
+                <h3>{selectedResource.title}</h3>
+                <p className="code-label">{selectedResource.code}</p>
+                <p className="indicator-label">Indicator: {selectedIndicator}</p>
+              </div>
+
+              {selectedResource.rationale && (
+                <div className="rationale-box">
+                  <strong>📌 Rationale:</strong>
+                  <p>{selectedResource.rationale}</p>
+                </div>
+              )}
+
+              <div className="form-section">
+                <label>Learning Outcome *</label>
+                <input
+                  type="text"
+                  placeholder="What should teachers be able to do after this training?"
+                  value={state.learningOutcome}
+                  onChange={(e) => updateResourceState(selectedResourceCode, 'learningOutcome', e.target.value)}
+                  className="input-field"
+                />
+              </div>
+
+              <div className="form-section">
+                <label>Context Summary</label>
+                <textarea
+                  placeholder="Brief summary of the training video content (key points, focus areas)"
+                  value={state.context}
+                  onChange={(e) => updateResourceState(selectedResourceCode, 'context', e.target.value)}
+                  className="textarea-field"
+                  rows={3}
+                />
+              </div>
+
+              {state.error && <div className="error-message">{state.error}</div>}
+
+              <button
+                className="btn-generate"
+                onClick={() => handleGenerateQuestions(selectedResource, selectedTraining)}
+                disabled={state.isGenerating}
+              >
+                {state.isGenerating ? '⏳ Generating...' : '✨ Generate Questions'}
+              </button>
+
+              {state.generatedQuestions && (
+                <div className="questions-preview">
+                  <h4>Generated Questions ({state.generatedQuestions.length})</h4>
+                  {state.generatedQuestions.map((q, idx) => (
+                    <div key={idx} className="question-preview">
+                      <div className="question-number">Q{idx + 1}</div>
+                      <div className="scenario">
+                        <strong>Scenario:</strong> {q.scenario}
+                      </div>
+                      <div className="prompt">
+                        <strong>Prompt:</strong> {q.prompt}
+                      </div>
+                      <div className="criteria">
+                        <strong>Rubric Criteria:</strong>
+                        <ul>
+                          {q.rubricCriteria.map((c, i) => (
+                            <li key={i}>{c}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    className="btn-save"
+                    onClick={() => handleSaveQuestions(selectedResource, selectedTraining)}
+                    disabled={state.isSaving}
+                  >
+                    {state.isSaving ? '💾 Saving...' : '✅ Save to Database'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

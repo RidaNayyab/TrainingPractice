@@ -435,7 +435,7 @@ app.post('/api/practice/response', (req, res) => {
 // Generate practice questions using Claude AI
 app.post('/api/generate-questions', async (req, res) => {
   try {
-    const { trainingCode, indicatorCode, learningOutcome, context, rationale } = req.body;
+    const { trainingCode, indicatorCode, learningOutcome, context, rationale, systemPrompt } = req.body;
 
     if (!trainingCode || !learningOutcome) {
       return res.status(400).json({ error: 'trainingCode and learningOutcome are required' });
@@ -465,7 +465,7 @@ Format your response as a valid JSON array with NO markdown, NO code blocks:
       model: questionGenConfig.config.model || 'claude-opus-4-7',
       max_tokens: questionGenConfig.config.maxTokens || 500,
       temperature: questionGenConfig.config.temperature || 0.7,
-      system: questionGenConfig.systemPrompt,
+      system: systemPrompt || questionGenConfig.systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     });
 
