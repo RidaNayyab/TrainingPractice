@@ -124,4 +124,24 @@ export const apiService = {
     if (!res.ok) throw new Error('Failed to save practice response');
     return res.json();
   },
+
+  async simulate(
+    indicatorCode: string,
+    conversationHistory: Array<{ role: 'teacher' | 'student'; message: string }>,
+    turnNumber: number,
+    maxTurns: number
+  ): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/simulate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        indicatorCode,
+        conversationHistory,
+        turnNumber,
+        maxTurns,
+      }),
+    });
+    if (!response.ok) throw new Error('Failed to simulate student response');
+    return response.json();
+  },
 };

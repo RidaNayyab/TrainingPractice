@@ -1,0 +1,15 @@
+{
+  "SI1": {
+    "title": "Classroom Scenario: Starting a Lesson",
+    "setup": "You are about to start a Grade 3 Math lesson on multiplication. You have 25 students waiting and they are looking at you expectantly.",
+    "studentPersona": "A curious 8-year-old who asks direct questions. Gets confused easily if instructions are vague or unclear.",
+    "initialStudentMessage": "Teacher, what are we doing today?",
+    "indicatorFocus": "Instructional Clarity — teacher must state a clear learning objective so students know what they will learn and why",
+    "rubricCriteria": [
+      "Learning objective stated clearly in student-friendly language",
+      "Students understand what they will be able to do by end of lesson",
+      "Goal connected to prior knowledge or real context"
+    ],
+    "maxTurns": 3
+  }
+}

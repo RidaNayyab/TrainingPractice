@@ -3,7 +3,9 @@ import { IndicatorCode } from '../types/index';
 import { apiService, Observation } from '../services/api';
 import { TrainingVideo } from './TrainingVideo';
 import { PracticeFlow } from './PracticeFlow';
+import { SimulationFlow } from './SimulationFlow';
 import { CompletionScreen } from './CompletionScreen';
+import simulationsData from '../data/simulations.json';
 import styles from './FeedbackTrainingModule.module.css';
 
 // Indicator name mapping
@@ -190,11 +192,21 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
       )}
 
       {state === 'practice' && (
-        <PracticeFlow
-          indicatorCode={indicatorCode}
-          questions={practiceQuestions}
-          onComplete={() => onClose?.()}
-        />
+        (() => {
+          const hasSimulation = !!(simulationsData as any)[indicatorCode];
+          return hasSimulation ? (
+            <SimulationFlow
+              indicatorCode={indicatorCode}
+              onComplete={() => onClose?.()}
+            />
+          ) : (
+            <PracticeFlow
+              indicatorCode={indicatorCode}
+              questions={practiceQuestions}
+              onComplete={() => onClose?.()}
+            />
+          );
+        })()
       )}
 
       {state === 'completion' && (

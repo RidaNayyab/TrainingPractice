@@ -638,6 +638,121 @@ Now evaluate this response against the rubric criteria above. Return ONLY valid 
   }
 });
 
+// AI Student Simulation
+const simulationsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/simulations.json');
+const simulations = JSON.parse(fs.readFileSync(simulationsPath, 'utf-8'));
+
+app.post('/api/simulate', async (req, res) => {
+  try {
+    const { indicatorCode, conversationHistory, turnNumber, maxTurns } = req.body;
+
+    if (!indicatorCode || !conversationHistory || !Array.isArray(conversationHistory)) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const simulation = (simulations as any)[indicatorCode];
+    if (!simulation) {
+      return res.status(404).json({ error: `No simulation found for indicator ${indicatorCode}` });
+    }
+
+    // Build conversation for Claude
+    const conversationForClaude = conversationHistory.map((msg: any) => ({
+      role: msg.role === 'teacher' ? 'user' : 'assistant',
+      content: msg.message,
+    }));
+
+    // System prompt for the AI student
+    const studentSystemPrompt = `You are a realistic ${8}-year-old student in a classroom. Your name is not important. The teacher is teaching about "${simulation.indicatorFocus}".
+
+Student Persona: ${simulation.studentPersona}
+
+Your job is to react authentically to the teacher's instructions. If the teacher's explanation is clear and well-structured, show understanding ("Oh I see!", "That makes sense!"). If the teacher is vague or unclear, push back with honest confusion ("I don't understand", "What does that mean?", "Can you explain more?").
+
+Keep responses short (1-3 sentences) and natural, like a real student would talk.
+
+${
+  turnNumber === maxTurns
+    ? `This is the final turn. After responding briefly, also be ready for the teacher to wrap up the lesson. Your response should indicate whether the teacher successfully demonstrated: ${simulation.indicatorFocus}`
+    : ''
+}`;
+
+    const message = await client.messages.create({
+      model: 'claude-opus-4-7',
+      max_tokens: 150,
+      system: studentSystemPrompt,
+      messages: conversationForClaude,
+    });
+
+    const studentMessage = message.content[0].type === 'text' ? message.content[0].text : '';
+
+    if (turnNumber === maxTurns) {
+      // Evaluate the entire conversation
+      const evaluationPrompt = `You are an instructional coach evaluating a teacher-student interaction based on the indicator: "${simulation.indicatorFocus}"
+
+Rubric Criteria to evaluate:
+${simulation.rubricCriteria.map((c: string) => `- ${c}`).join('\n')}
+
+Based on the conversation below, evaluate the teacher's performance. Did the teacher successfully demonstrate the indicator?
+
+Teacher Responses:
+${
+  conversationHistory
+    .filter((m: any) => m.role === 'teacher')
+    .map((m: any) => m.message)
+    .join('\n\n')
+}
+
+Provide feedback in JSON format:
+{
+  "score": "YES" | "PARTIAL" | "NO",
+  "feedback": "...",
+  "rubric_criteria_met": [...],
+  "rubric_criteria_missed": [...]
+}`;
+
+      const evaluationMessage = await client.messages.create({
+        model: 'claude-opus-4-7',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: evaluationPrompt }],
+      });
+
+      const evaluationText = evaluationMessage.content[0].type === 'text' ? evaluationMessage.content[0].text : '{}';
+
+      let evaluation;
+      try {
+        const jsonMatch = evaluationText.match(/\{[\s\S]*\}/);
+        evaluation = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+      } catch {
+        evaluation = {
+          score: 'PARTIAL',
+          feedback: 'Evaluation completed',
+          rubric_criteria_met: [],
+          rubric_criteria_missed: [],
+        };
+      }
+
+      res.json({
+        studentMessage,
+        isComplete: true,
+        evaluation: {
+          score: evaluation.score || 'PARTIAL',
+          feedback: evaluation.feedback || 'Good effort!',
+          rubric_criteria_met: evaluation.rubric_criteria_met || [],
+          rubric_criteria_missed: evaluation.rubric_criteria_missed || [],
+        },
+      });
+    } else {
+      res.json({
+        studentMessage,
+        isComplete: false,
+      });
+    }
+  } catch (err) {
+    console.error('Simulation error:', err);
+    res.status(500).json({ error: 'Failed to generate student response' });
+  }
+});
+
 // Soniox audio transcription integration
 const SONIOX_API_BASE_URL = 'https://api.soniox.com';
 const sonioxApiKey = process.env.SONIOX_API_KEY;
