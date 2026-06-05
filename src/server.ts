@@ -13,8 +13,8 @@ const PORT = 3001;
 const client = new Anthropic();
 
 app.use(cors());
-// Audio uploads need raw binary handling
-app.post('/api/upload-audio', express.raw({ type: 'audio/*', limit: '50mb' }));
+// Raw binary handling for audio uploads
+app.use('/api/upload-audio', express.raw({ type: 'audio/*', limit: '50mb' }));
 app.use(express.json({ limit: '50mb' }));
 
 // Load data files
@@ -641,6 +641,7 @@ Now evaluate this response against the rubric criteria above. Return ONLY valid 
 // AI Student Simulation
 const simulationsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/simulations.json');
 const simulations = JSON.parse(fs.readFileSync(simulationsPath, 'utf-8'));
+console.log('✅ Registering /api/simulate endpoint');
 
 app.post('/api/simulate', async (req, res) => {
   try {

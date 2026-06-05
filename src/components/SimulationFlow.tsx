@@ -218,11 +218,8 @@ export const SimulationFlow: React.FC<SimulationFlowProps> = ({
           </div>
           <div className={styles.scenarioContent}>
             <p className={styles.setup}>{simulation.setup}</p>
-            <div className={styles.persona}>
-              <strong>Student:</strong> {simulation.studentPersona}
-            </div>
             <div className={styles.focus}>
-              <strong>📍 Your Focus:</strong> {simulation.indicatorFocus}
+              <strong>Focus:</strong> {simulation.indicatorFocus}
             </div>
           </div>
         </div>
