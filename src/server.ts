@@ -641,7 +641,6 @@ Now evaluate this response against the rubric criteria above. Return ONLY valid 
 // AI Student Simulation
 const simulationsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/simulations.json');
 const simulations = JSON.parse(fs.readFileSync(simulationsPath, 'utf-8'));
-console.log('✅ Registering /api/simulate endpoint');
 
 app.post('/api/simulate', async (req, res) => {
   try {
