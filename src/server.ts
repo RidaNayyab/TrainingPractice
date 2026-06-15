@@ -487,58 +487,63 @@ Start JSON array now:`;
 
     const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
     console.log(`📥 Claude response length: ${responseText.length}`);
+    console.log(`📝 Claude raw response:\n${responseText}`);
     let questions;
 
     try {
       questions = JSON.parse(responseText);
     } catch (e) {
-      // Try multiple strategies to extract JSON from Claude's response
-
-      // Strategy 1: Look for array with objects
-      let jsonMatch = responseText.match(/\[\s*\{[\s\S]*\}\s*\]/);
-
-      // Strategy 2: If not found, look for any JSON array
-      if (!jsonMatch) {
-        jsonMatch = responseText.match(/\[[\s\S]*\]/);
+      // Extract JSON by finding the matching brackets
+      // This is more robust than regex for nested structures
+      const startIdx = responseText.indexOf('[');
+      if (startIdx === -1) {
+        throw new Error('No JSON array found in response');
       }
 
-      // Strategy 3: Remove markdown code blocks if present
-      if (!jsonMatch) {
-        const cleaned = responseText
-          .replace(/```json\s*/g, '')
-          .replace(/```\s*/g, '');
-        jsonMatch = cleaned.match(/\[[\s\S]*\]/);
-      }
-
-      if (jsonMatch) {
-        try {
-          let jsonStr = jsonMatch[0];
-          console.log(`[DEBUG] Extracted JSON length: ${jsonStr.length}, first 100 chars:`, jsonStr.substring(0, 100));
-
-          // Normalize: replace newlines with spaces
-          jsonStr = jsonStr.replace(/[\r\n]/g, ' ');
-          // Clean up spacing
-          jsonStr = jsonStr
-            .replace(/,\s+/g, ', ')
-            .replace(/:\s+/g, ': ')
-            .replace(/\[\s+/g, '[')
-            .replace(/\s+\]/g, ']');
-
-          questions = JSON.parse(jsonStr);
-          console.log(`[DEBUG] Successfully parsed ${questions.length} questions`);
-        } catch (parseErr) {
-          console.error('[ERROR] JSON Parse failed');
-          console.error('Position:', (parseErr as any).position);
-          const pos = ((parseErr as any).position || 0);
-          const startPos = Math.max(0, pos - 100);
-          const endPos = Math.min(responseText.length, pos + 100);
-          console.error('Error context:', responseText.substring(startPos, endPos));
-          throw new Error(`JSON Parse Error at position ${pos}: ${parseErr.message}`);
+      // Find matching closing bracket by counting
+      let braceCount = 0;
+      let endIdx = -1;
+      for (let i = startIdx; i < responseText.length; i++) {
+        const char = responseText[i];
+        if (char === '[' || char === '{') {
+          braceCount++;
+        } else if (char === ']' || char === '}') {
+          braceCount--;
+          if (braceCount === 0 && responseText[i] === ']') {
+            endIdx = i;
+            break;
+          }
         }
-      } else {
-        console.error('[ERROR] Could not extract JSON array');
-        console.error('Full response (first 1000 chars):', responseText.substring(0, 1000));
-        throw new Error('Could not extract JSON from response. Claude may have returned invalid format.');
+      }
+
+      if (endIdx === -1) {
+        console.error('[ERROR] Unmatched brackets. Response:', responseText.substring(0, 500));
+        throw new Error('Unmatched brackets in JSON response');
+      }
+
+      let jsonStr = responseText.substring(startIdx, endIdx + 1);
+      console.log(`[DEBUG] Extracted JSON: start=${startIdx}, end=${endIdx}, length=${jsonStr.length}`);
+
+      try {
+        // Normalize: replace newlines with spaces
+        jsonStr = jsonStr.replace(/[\r\n]/g, ' ');
+        // Clean up spacing
+        jsonStr = jsonStr
+          .replace(/,\s+/g, ', ')
+          .replace(/:\s+/g, ': ')
+          .replace(/\[\s+/g, '[')
+          .replace(/\s+\]/g, ']')
+          .replace(/\s+"/g, '"');
+
+        questions = JSON.parse(jsonStr);
+        console.log(`[DEBUG] Successfully parsed ${questions.length} questions`);
+      } catch (parseErr) {
+        console.error('[ERROR] JSON Parse failed at:', (parseErr as any).position);
+        const pos = ((parseErr as any).position || 0);
+        const startPos = Math.max(0, pos - 100);
+        const endPos = Math.min(jsonStr.length, pos + 100);
+        console.error('Error context around position', pos, ':', jsonStr.substring(startPos, endPos));
+        throw parseErr;
       }
     }
 
