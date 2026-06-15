@@ -325,12 +325,24 @@ export default function PipelinePage() {
                   <h4>Generated Questions ({state.generatedQuestions.length})</h4>
                   {state.generatedQuestions.map((q, idx) => (
                     <div key={idx} className="question-preview">
-                      <div className="question-number">Q{idx + 1}</div>
+                      <div className="question-header">
+                        <div className="question-number">Q{idx + 1}</div>
+                        <button
+                          className="btn-delete"
+                          onClick={() => {
+                            const updated = state.generatedQuestions!.filter((_, i) => i !== idx);
+                            updateResourceState(code, 'generatedQuestions', updated.length > 0 ? updated : null);
+                          }}
+                          title="Delete this question"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                       <div className="scenario">
                         <strong>Scenario:</strong> {q.scenario}
                       </div>
                       <div className="prompt">
-                        <strong>Prompt:</strong> {q.prompt}
+                        <strong>Question:</strong> {q.prompt}
                       </div>
                       <div className="criteria">
                         <strong>Rubric Criteria:</strong>

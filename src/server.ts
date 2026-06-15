@@ -472,7 +472,7 @@ Start JSON array now:`;
 
     const messageParams: any = {
       model: questionGenConfig.config.model || 'claude-opus-4-7',
-      max_tokens: questionGenConfig.config.maxTokens || 2000,
+      max_tokens: questionGenConfig.config.maxTokens || 3000,
       system: systemPrompt || questionGenConfig.systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     };
@@ -540,24 +540,42 @@ Start JSON array now:`;
       }
 
       if (endIdx === -1) {
-        // Response might be truncated - try to fix incomplete JSON
-        console.warn('[WARN] Incomplete JSON detected. Full response length:', responseText.length);
+        // Response might be truncated - try to recover as much as possible
+        console.warn('[WARN] Incomplete JSON - attempting recovery. Response length:', responseText.length);
         const lastBrace = responseText.lastIndexOf('}');
-        if (lastBrace > startIdx && lastBrace !== -1) {
-          endIdx = lastBrace;
-          console.log('[INFO] Found last closing brace at position', endIdx);
-        } else {
-          console.error('[ERROR] Cannot find valid JSON structure');
-          throw new Error('Response appears to be truncated and cannot be recovered');
+        if (lastBrace <= startIdx) {
+          throw new Error('Response does not contain valid JSON');
         }
+        endIdx = lastBrace;
+        console.log('[INFO] Found last closing brace at position', endIdx);
       }
 
       let jsonStr = responseText.substring(startIdx, endIdx + 1);
 
-      // If we recovered from an incomplete response, add closing bracket
-      if (responseText[endIdx] === '}' && responseText[endIdx + 1] !== ']') {
+      // If we recovered from an incomplete response, ensure it's a valid array
+      if (!jsonStr.endsWith(']')) {
+        // Count how many complete objects we have
+        let objectCount = 0;
+        let inStr = false;
+        let escaped = false;
+        for (let i = startIdx; i <= endIdx; i++) {
+          if (escaped) {
+            escaped = false;
+            continue;
+          }
+          if (responseText[i] === '\\') {
+            escaped = true;
+            continue;
+          }
+          if (responseText[i] === '"') {
+            inStr = !inStr;
+          }
+          if (!inStr && responseText[i] === '}') {
+            objectCount++;
+          }
+        }
         jsonStr = jsonStr + ']';
-        console.log('[INFO] Added closing bracket to incomplete JSON');
+        console.log(`[INFO] Added closing bracket. Recovered ${objectCount} complete question object(s)`);
       }
 
       console.log(`[DEBUG] Extracted JSON: length=${jsonStr.length}, first 150 chars:`, jsonStr.substring(0, 150));

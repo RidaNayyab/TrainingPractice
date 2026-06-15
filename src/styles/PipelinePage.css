@@ -350,11 +350,32 @@
   border-radius: 4px;
 }
 
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 .question-number {
   font-weight: 600;
   color: #27ae60;
-  margin-bottom: 8px;
   font-size: 0.9em;
+}
+
+.btn-delete {
+  background: transparent;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+  background: #ffe0e0;
+  transform: scale(1.1);
 }
 
 .scenario,
