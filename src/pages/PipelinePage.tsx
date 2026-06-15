@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import trainingsData from '../data/trainings.json';
 import questionGenPrompt from '../data/questionGenerationPrompt.json';
 import '../styles/PipelinePage.css';
@@ -187,7 +188,10 @@ export default function PipelinePage() {
   return (
     <div className="pipeline-page">
       <header className="pipeline-header">
-        <h1>📚 Training Questions Generation Pipeline</h1>
+        <div className="pipeline-header-top">
+          <Link to="/" className="back-link">← Back to Training</Link>
+          <h1>📚 Training Questions Generation Pipeline</h1>
+        </div>
         <p>Generate practice questions for training videos using AI</p>
       </header>
 

@@ -11,10 +11,36 @@
   animation: slideDown 0.5s ease-out;
 }
 
+.header-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 .test-header h1 {
-  margin: 0 0 10px 0;
+  margin: 0;
   font-size: 32px;
   font-weight: 700;
+}
+
+.pipeline-link {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pipeline-link:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.05);
 }
 
 .test-header p {

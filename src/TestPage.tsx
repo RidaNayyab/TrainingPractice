@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { FeedbackTrainingModule } from './components/FeedbackTrainingModule';
 import './TestPage.css';
 
@@ -85,7 +86,10 @@ export default function TestPage() {
   return (
     <div className="test-page">
       <header className="test-header">
-        <h1>👨‍🏫 Digital Coach - Teacher Training</h1>
+        <div className="header-top">
+          <h1>👨‍🏫 Digital Coach - Teacher Training</h1>
+          <Link to="/pipeline" className="pipeline-link">⚙️ Question Pipeline</Link>
+        </div>
         <p>Select observations, start training, practice questions & feedback</p>
       </header>
 

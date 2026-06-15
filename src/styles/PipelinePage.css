@@ -12,15 +12,40 @@
   color: #333;
 }
 
+.pipeline-header-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.back-link {
+  background: #667eea;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.back-link:hover {
+  background: #764ba2;
+  transform: scale(1.05);
+}
+
 .pipeline-header h1 {
   font-size: 2.5em;
-  margin: 0 0 10px 0;
+  margin: 0;
 }
 
 .pipeline-header p {
   font-size: 1.1em;
   color: #666;
-  margin: 0;
+  margin: 10px 0 0 0;
 }
 
 .pipeline-container {
