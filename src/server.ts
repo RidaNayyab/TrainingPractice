@@ -463,13 +463,20 @@ Format your response as a valid JSON array with NO markdown, NO code blocks:
 
     console.log(`📝 Generating questions for ${trainingCode} with system prompt length: ${systemPrompt?.length || 0}`);
 
-    const message = await client.messages.create({
+    const messageParams: any = {
       model: questionGenConfig.config.model || 'claude-opus-4-7',
       max_tokens: questionGenConfig.config.maxTokens || 1500,
-      temperature: questionGenConfig.config.temperature || 0.7,
       system: systemPrompt || questionGenConfig.systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
-    });
+    };
+
+    // Temperature is deprecated for claude-opus-4-7, only add for other models
+    const model = messageParams.model;
+    if (!model.includes('opus-4-7') && !model.includes('opus-4')) {
+      messageParams.temperature = questionGenConfig.config.temperature || 0.7;
+    }
+
+    const message = await client.messages.create(messageParams);
 
     const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
     console.log(`📥 Claude response length: ${responseText.length}`);
