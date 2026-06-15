@@ -472,7 +472,7 @@ Start JSON array now:`;
 
     const messageParams: any = {
       model: questionGenConfig.config.model || 'claude-opus-4-7',
-      max_tokens: questionGenConfig.config.maxTokens || 1500,
+      max_tokens: questionGenConfig.config.maxTokens || 2000,
       system: systemPrompt || questionGenConfig.systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     };
@@ -540,11 +540,26 @@ Start JSON array now:`;
       }
 
       if (endIdx === -1) {
-        console.error('[ERROR] Could not find matching bracket. Response start:', responseText.substring(0, 300));
-        throw new Error('Could not find matching ] in JSON response');
+        // Response might be truncated - try to fix incomplete JSON
+        console.warn('[WARN] Incomplete JSON detected. Full response length:', responseText.length);
+        const lastBrace = responseText.lastIndexOf('}');
+        if (lastBrace > startIdx && lastBrace !== -1) {
+          endIdx = lastBrace;
+          console.log('[INFO] Found last closing brace at position', endIdx);
+        } else {
+          console.error('[ERROR] Cannot find valid JSON structure');
+          throw new Error('Response appears to be truncated and cannot be recovered');
+        }
       }
 
       let jsonStr = responseText.substring(startIdx, endIdx + 1);
+
+      // If we recovered from an incomplete response, add closing bracket
+      if (responseText[endIdx] === '}' && responseText[endIdx + 1] !== ']') {
+        jsonStr = jsonStr + ']';
+        console.log('[INFO] Added closing bracket to incomplete JSON');
+      }
+
       console.log(`[DEBUG] Extracted JSON: length=${jsonStr.length}, first 150 chars:`, jsonStr.substring(0, 150));
 
       try {
