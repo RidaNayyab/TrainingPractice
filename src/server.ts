@@ -461,15 +461,18 @@ Format your response as a valid JSON array with NO markdown, NO code blocks:
 ]
 `;
 
+    console.log(`📝 Generating questions for ${trainingCode} with system prompt length: ${systemPrompt?.length || 0}`);
+
     const message = await client.messages.create({
       model: questionGenConfig.config.model || 'claude-opus-4-7',
-      max_tokens: questionGenConfig.config.maxTokens || 500,
+      max_tokens: questionGenConfig.config.maxTokens || 1500,
       temperature: questionGenConfig.config.temperature || 0.7,
       system: systemPrompt || questionGenConfig.systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     });
 
     const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+    console.log(`📥 Claude response length: ${responseText.length}`);
     let questions;
 
     try {
@@ -480,6 +483,7 @@ Format your response as a valid JSON array with NO markdown, NO code blocks:
       if (jsonMatch) {
         questions = JSON.parse(jsonMatch[0]);
       } else {
+        console.error('Response text:', responseText.substring(0, 500));
         throw new Error('Failed to parse Claude response as JSON');
       }
     }
@@ -512,6 +516,11 @@ app.post('/api/save-questions', async (req, res) => {
     if (!trainingCode || !questions || !Array.isArray(questions)) {
       return res.status(400).json({ error: 'trainingCode and questions array are required' });
     }
+
+    // Add error handler before connecting
+    dbConn.on('error', (err) => {
+      console.error('[ERROR] Database connection error:', err);
+    });
 
     await dbConn.connect();
 
@@ -557,7 +566,11 @@ app.post('/api/save-questions', async (req, res) => {
     console.error('[ERROR] Save questions failed:', err);
     res.status(500).json({ error: err instanceof Error ? err.message : 'Save questions failed' });
   } finally {
-    await dbConn.end();
+    try {
+      await dbConn.end();
+    } catch (endErr) {
+      console.error('[ERROR] Failed to close database connection:', endErr);
+    }
   }
 });
 
