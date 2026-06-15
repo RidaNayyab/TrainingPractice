@@ -493,56 +493,79 @@ Start JSON array now:`;
     try {
       questions = JSON.parse(responseText);
     } catch (e) {
-      // Extract JSON by finding the matching brackets
-      // This is more robust than regex for nested structures
+      // Extract JSON by counting brackets while respecting string boundaries
       const startIdx = responseText.indexOf('[');
       if (startIdx === -1) {
-        throw new Error('No JSON array found in response');
+        throw new Error('No JSON array [ found in response');
       }
 
-      // Find matching closing bracket by counting
+      // Count brackets while being aware of strings
       let braceCount = 0;
       let endIdx = -1;
+      let inString = false;
+      let escapeNext = false;
+
       for (let i = startIdx; i < responseText.length; i++) {
         const char = responseText[i];
-        if (char === '[' || char === '{') {
-          braceCount++;
-        } else if (char === ']' || char === '}') {
-          braceCount--;
-          if (braceCount === 0 && responseText[i] === ']') {
-            endIdx = i;
-            break;
+
+        // Handle escape sequences
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+
+        if (char === '\\') {
+          escapeNext = true;
+          continue;
+        }
+
+        // Toggle string state
+        if (char === '"') {
+          inString = !inString;
+          continue;
+        }
+
+        // Only count brackets when not in a string
+        if (!inString) {
+          if (char === '[' || char === '{') {
+            braceCount++;
+          } else if (char === ']' || char === '}') {
+            braceCount--;
+            if (braceCount === 0 && char === ']') {
+              endIdx = i;
+              break;
+            }
           }
         }
       }
 
       if (endIdx === -1) {
-        console.error('[ERROR] Unmatched brackets. Response:', responseText.substring(0, 500));
-        throw new Error('Unmatched brackets in JSON response');
+        console.error('[ERROR] Could not find matching bracket. Response start:', responseText.substring(0, 300));
+        throw new Error('Could not find matching ] in JSON response');
       }
 
       let jsonStr = responseText.substring(startIdx, endIdx + 1);
-      console.log(`[DEBUG] Extracted JSON: start=${startIdx}, end=${endIdx}, length=${jsonStr.length}`);
+      console.log(`[DEBUG] Extracted JSON: length=${jsonStr.length}, first 150 chars:`, jsonStr.substring(0, 150));
 
       try {
         // Normalize: replace newlines with spaces
         jsonStr = jsonStr.replace(/[\r\n]/g, ' ');
-        // Clean up spacing
+        // Clean up excess spacing
         jsonStr = jsonStr
           .replace(/,\s+/g, ', ')
           .replace(/:\s+/g, ': ')
           .replace(/\[\s+/g, '[')
-          .replace(/\s+\]/g, ']')
-          .replace(/\s+"/g, '"');
+          .replace(/\s+\]/g, ']');
 
         questions = JSON.parse(jsonStr);
-        console.log(`[DEBUG] Successfully parsed ${questions.length} questions`);
+        console.log(`✅ Successfully parsed ${questions.length} questions`);
       } catch (parseErr) {
-        console.error('[ERROR] JSON Parse failed at:', (parseErr as any).position);
+        console.error('[ERROR] JSON Parse failed:', (parseErr as any).message);
         const pos = ((parseErr as any).position || 0);
-        const startPos = Math.max(0, pos - 100);
-        const endPos = Math.min(jsonStr.length, pos + 100);
-        console.error('Error context around position', pos, ':', jsonStr.substring(startPos, endPos));
+        const startPos = Math.max(0, pos - 50);
+        const endPos = Math.min(jsonStr.length, pos + 50);
+        console.error('Char at error position:', jsonStr[pos], 'Code:', jsonStr.charCodeAt(pos));
+        console.error('Context:', jsonStr.substring(startPos, endPos));
         throw parseErr;
       }
     }
