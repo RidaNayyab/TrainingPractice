@@ -115,18 +115,23 @@ export default function PipelinePage() {
           indicatorCode: training.indicator,
           learningOutcome: state.learningOutcome,
           context: state.context,
-          rationale: resource.rationale,
           systemPrompt: systemPrompt,
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to generate questions: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('API Error:', response.status, errorText);
+        throw new Error(`API Error ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
+      if (!data.questions) {
+        throw new Error('No questions in response');
+      }
       updateResourceState(code, 'generatedQuestions', data.questions);
     } catch (err) {
+      console.error('Generation error:', err);
       updateResourceState(code, 'error', err instanceof Error ? err.message : 'Error generating questions');
     } finally {
       updateResourceState(code, 'isGenerating', false);
