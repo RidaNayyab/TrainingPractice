@@ -472,7 +472,7 @@ Start JSON array now:`;
 
     const messageParams: any = {
       model: questionGenConfig.config.model || 'claude-opus-4-7',
-      max_tokens: questionGenConfig.config.maxTokens || 3000,
+      max_tokens: questionGenConfig.config.maxTokens || 4096,
       system: systemPrompt || questionGenConfig.systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     };

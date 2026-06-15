@@ -32,6 +32,7 @@ interface ResourceState {
   generatedQuestions: GeneratedQuestion[] | null;
   error: string | null;
   isSaving: boolean;
+  editingQuestionIdx: number | null;
 }
 
 export default function PipelinePage() {
@@ -71,6 +72,7 @@ export default function PipelinePage() {
         generatedQuestions: null,
         error: null,
         isSaving: false,
+        editingQuestionIdx: null,
       });
     });
     setResourceStates(states);
@@ -323,27 +325,73 @@ export default function PipelinePage() {
               {state.generatedQuestions && (
                 <div className="questions-preview">
                   <h4>Generated Questions ({state.generatedQuestions.length})</h4>
-                  {state.generatedQuestions.map((q, idx) => (
+                  {state.generatedQuestions && state.generatedQuestions.map((q, idx) => (
                     <div key={idx} className="question-preview">
                       <div className="question-header">
                         <div className="question-number">Q{idx + 1}</div>
-                        <button
-                          className="btn-delete"
-                          onClick={() => {
-                            const updated = state.generatedQuestions!.filter((_, i) => i !== idx);
-                            updateResourceState(code, 'generatedQuestions', updated.length > 0 ? updated : null);
-                          }}
-                          title="Delete this question"
-                        >
-                          🗑️
-                        </button>
+                        <div className="question-actions">
+                          <button
+                            className="btn-edit"
+                            onClick={() => updateResourceState(selectedResourceCode, 'editingQuestionIdx', state.editingQuestionIdx === idx ? null : idx)}
+                            title={state.editingQuestionIdx === idx ? 'Done editing' : 'Edit this question'}
+                          >
+                            {state.editingQuestionIdx === idx ? '✓' : '✏️'}
+                          </button>
+                          <button
+                            className="btn-delete"
+                            onClick={() => {
+                              if (!state.generatedQuestions) return;
+                              const updated = state.generatedQuestions.filter((_, i) => i !== idx);
+                              updateResourceState(selectedResourceCode, 'generatedQuestions', updated.length > 0 ? updated : null);
+                            }}
+                            title="Delete this question"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
-                      <div className="scenario">
-                        <strong>Scenario:</strong> {q.scenario}
-                      </div>
-                      <div className="prompt">
-                        <strong>Question:</strong> {q.prompt}
-                      </div>
+
+                      {state.editingQuestionIdx === idx ? (
+                        <>
+                          <div className="scenario edit-mode">
+                            <strong>Scenario:</strong>
+                            <textarea
+                              value={q.scenario}
+                              onChange={(e) => {
+                                if (!state.generatedQuestions) return;
+                                const updated = [...state.generatedQuestions];
+                                updated[idx].scenario = e.target.value;
+                                updateResourceState(selectedResourceCode, 'generatedQuestions', updated);
+                              }}
+                              rows={3}
+                              className="edit-textarea"
+                            />
+                          </div>
+                          <div className="prompt edit-mode">
+                            <strong>Question:</strong>
+                            <textarea
+                              value={q.prompt}
+                              onChange={(e) => {
+                                if (!state.generatedQuestions) return;
+                                const updated = [...state.generatedQuestions];
+                                updated[idx].prompt = e.target.value;
+                                updateResourceState(selectedResourceCode, 'generatedQuestions', updated);
+                              }}
+                              rows={3}
+                              className="edit-textarea"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="scenario">
+                            <strong>Scenario:</strong> {q.scenario}
+                          </div>
+                          <div className="prompt">
+                            <strong>Question:</strong> {q.prompt}
+                          </div>
+                        </>
+                      )}
                       <div className="criteria">
                         <strong>Rubric Criteria:</strong>
                         <ul>
