@@ -488,10 +488,21 @@ Format your response as a valid JSON array with NO markdown, NO code blocks:
       // Try to extract JSON from response
       const jsonMatch = responseText.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
-        questions = JSON.parse(jsonMatch[0]);
+        try {
+          let jsonStr = jsonMatch[0];
+          // Fix unescaped newlines and quotes within strings
+          // This is a bit tricky - we need to properly escape newlines in the JSON
+          jsonStr = jsonStr.replace(/[\r\n]+/g, ' ').replace(/"\s+"/g, '" "');
+          questions = JSON.parse(jsonStr);
+        } catch (parseErr) {
+          console.error('Failed to parse extracted JSON. First 500 chars:', jsonMatch[0].substring(0, 500));
+          console.error('Parse error:', parseErr);
+          throw new Error('Extracted JSON is invalid');
+        }
       } else {
-        console.error('Response text:', responseText.substring(0, 500));
-        throw new Error('Failed to parse Claude response as JSON');
+        console.error('Response text (first 800 chars):', responseText.substring(0, 800));
+        console.error('Full response:', responseText);
+        throw new Error('Failed to find JSON array in Claude response');
       }
     }
 
