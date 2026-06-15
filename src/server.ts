@@ -442,24 +442,25 @@ app.post('/api/generate-questions', async (req, res) => {
     }
 
     const questionCount = questionGenConfig.questionsPerTraining || 2;
-    const userMessage = `
-Training Code: ${trainingCode}
-Indicator: ${indicatorCode}
-Learning Outcome: ${learningOutcome}
-Context: ${context || 'N/A'}
-Training Rationale: ${rationale || 'N/A'}
+    const userMessage = `Generate exactly ${questionCount} practice questions.
 
-Generate exactly ${questionCount} practice questions based on this training. Each question should be scenario-based and test the teacher's ability to apply the learning.
+TRAINING:
+- Code: ${trainingCode}
+- Indicator: ${indicatorCode}
+- Learning Outcome: ${learningOutcome}
+- Context: ${context || 'N/A'}
+- Rationale: ${rationale || 'N/A'}
 
-Format your response as a valid JSON array with NO markdown, NO code blocks:
-[
-  {
-    "scenario": "...",
-    "prompt": "...",
-    "rubricCriteria": ["criterion 1", "criterion 2", "criterion 3"]
-  }
-]
-`;
+OUTPUT RULES:
+1. Return ONLY valid JSON, no markdown or extra text
+2. Each string value must be on a single line (no newlines inside strings)
+3. Escape all special characters properly
+4. Use this exact format:
+
+[{"scenario":"[single-line scenario description]","prompt":"[single-line question prompt]","rubricCriteria":["criterion1","criterion2","criterion3"]},{"scenario":"[second scenario]","prompt":"[second prompt]","rubricCriteria":["criterion1","criterion2"]}]
+
+5. Ensure rubricCriteria has 2-3 items per question
+6. Make questions practical and classroom-realistic for Pakistani government school teachers`;
 
     console.log(`📝 Generating questions for ${trainingCode} with system prompt length: ${systemPrompt?.length || 0}`);
 
@@ -490,14 +491,13 @@ Format your response as a valid JSON array with NO markdown, NO code blocks:
       if (jsonMatch) {
         try {
           let jsonStr = jsonMatch[0];
-          // Fix unescaped newlines and quotes within strings
-          // This is a bit tricky - we need to properly escape newlines in the JSON
-          jsonStr = jsonStr.replace(/[\r\n]+/g, ' ').replace(/"\s+"/g, '" "');
+          // Fix unescaped newlines within string values
+          jsonStr = jsonStr.replace(/[\r\n]+/g, ' ');
           questions = JSON.parse(jsonStr);
         } catch (parseErr) {
           console.error('Failed to parse extracted JSON. First 500 chars:', jsonMatch[0].substring(0, 500));
           console.error('Parse error:', parseErr);
-          throw new Error('Extracted JSON is invalid');
+          throw new Error('Invalid JSON from Claude: ' + parseErr.message);
         }
       } else {
         console.error('Response text (first 800 chars):', responseText.substring(0, 800));
