@@ -435,32 +435,38 @@ app.post('/api/practice/response', (req, res) => {
 // Generate practice questions using Claude AI
 app.post('/api/generate-questions', async (req, res) => {
   try {
-    const { trainingCode, indicatorCode, learningOutcome, context, rationale, systemPrompt } = req.body;
+    const { trainingCode, indicatorCode, learningOutcome, context, systemPrompt } = req.body;
 
     if (!trainingCode || !learningOutcome) {
       return res.status(400).json({ error: 'trainingCode and learningOutcome are required' });
     }
 
     const questionCount = questionGenConfig.questionsPerTraining || 2;
-    const userMessage = `Generate exactly ${questionCount} practice questions.
+    const userMessage = `TASK: Generate exactly ${questionCount} practice questions.
 
-TRAINING:
-- Code: ${trainingCode}
-- Indicator: ${indicatorCode}
-- Learning Outcome: ${learningOutcome}
-- Context: ${context || 'N/A'}
-- Rationale: ${rationale || 'N/A'}
+INPUT:
+Code: ${trainingCode}
+Indicator: ${indicatorCode}
+Outcome: ${learningOutcome}
+Context: ${context || 'N/A'}
 
-OUTPUT RULES:
-1. Return ONLY valid JSON, no markdown or extra text
-2. Each string value must be on a single line (no newlines inside strings)
-3. Escape all special characters properly
-4. Use this exact format:
+OUTPUT: Valid JSON array ONLY. No markdown, no explanations.
 
-[{"scenario":"[single-line scenario description]","prompt":"[single-line question prompt]","rubricCriteria":["criterion1","criterion2","criterion3"]},{"scenario":"[second scenario]","prompt":"[second prompt]","rubricCriteria":["criterion1","criterion2"]}]
+CRITICAL - JSON FORMAT:
+- Each string must be on ONE LINE (replace newlines with spaces)
+- All quotes inside strings must be ESCAPED with backslash: \\"
+- All backslashes must be escaped: \\\\
+- No line breaks except after commas between objects
 
-5. Ensure rubricCriteria has 2-3 items per question
-6. Make questions practical and classroom-realistic for Pakistani government school teachers`;
+EXAMPLE:
+[{"scenario":"Grade 2 classroom...","prompt":"Write what...","rubricCriteria":["criterion 1","criterion 2"]},{"scenario":"Another class...","prompt":"How would...","rubricCriteria":["item 1","item 2"]}]
+
+QUESTIONS (${questionCount}):
+1. Realistic Pakistani classroom scenario for a Grade 1-5 government school teacher
+2. Simple, action-oriented prompt - teacher must DO something, not describe or recall
+3. 2-3 rubric criteria that are specific and observable
+
+Start JSON array now:`;
 
     console.log(`📝 Generating questions for ${trainingCode} with system prompt length: ${systemPrompt?.length || 0}`);
 
@@ -487,22 +493,29 @@ OUTPUT RULES:
       questions = JSON.parse(responseText);
     } catch (e) {
       // Try to extract JSON from response
-      const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+      const jsonMatch = responseText.match(/\[\s*\{[\s\S]*\}\s*\]/);
       if (jsonMatch) {
         try {
           let jsonStr = jsonMatch[0];
-          // Fix unescaped newlines within string values
-          jsonStr = jsonStr.replace(/[\r\n]+/g, ' ');
+          // Normalize: replace newlines with spaces
+          jsonStr = jsonStr.replace(/[\r\n]/g, ' ');
+          // Attempt to fix common JSON issues by processing each field carefully
+          // Split by field names and rejoin
+          jsonStr = jsonStr
+            .replace(/,\s+/g, ', ')  // normalize spacing after commas
+            .replace(/:\s+/g, ': '); // normalize spacing after colons
+
           questions = JSON.parse(jsonStr);
         } catch (parseErr) {
-          console.error('Failed to parse extracted JSON. First 500 chars:', jsonMatch[0].substring(0, 500));
-          console.error('Parse error:', parseErr);
-          throw new Error('Invalid JSON from Claude: ' + parseErr.message);
+          console.error('Position:', (parseErr as any).position);
+          const startPos = Math.max(0, ((parseErr as any).position || 0) - 50);
+          const endPos = startPos + 150;
+          console.error('Context:', responseText.substring(startPos, endPos));
+          throw parseErr;
         }
       } else {
-        console.error('Response text (first 800 chars):', responseText.substring(0, 800));
-        console.error('Full response:', responseText);
-        throw new Error('Failed to find JSON array in Claude response');
+        console.error('No JSON array found. Response:', responseText.substring(0, 500));
+        throw new Error('No JSON array in response');
       }
     }
 
