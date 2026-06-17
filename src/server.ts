@@ -609,36 +609,18 @@ Start JSON array now:`;
       return res.status(500).json({ error: 'Claude did not generate valid questions' });
     }
 
-    // Post-process: Transform to "You..." scenarios and "What would you..." questions
-    const processedQuestions = questions.map((q: any, idx: number) => {
+    const processedQuestions = questions.map((q: any) => {
       let prompt = (q.prompt || '').trim();
-      let scenario = (q.scenario || '').trim();
+      const scenario = (q.scenario || '').trim();
 
-      // SCENARIO TRANSFORMATION
-      // Keep Pakistani teacher names as-is (Ms. Ayesha, Mr. Bilal, etc)
-      // Just ensure scenarios are concise (max 2 sentences)
-
-      // PROMPT TRANSFORMATION
-      // Remove compound actions (everything after " and ")
-      if (prompt.includes(' and ')) {
-        prompt = prompt.split(' and ')[0].trim();
-      }
-
-      // Ensure prompt ends with question mark
       if (!prompt.endsWith('?')) {
-        prompt = prompt.replace(/\.$/, '?').trim();
-        if (!prompt.endsWith('?')) prompt += '?';
+        prompt = prompt.replace(/\.$/, '').trim() + '?';
       }
-
-      // Keep scenario to 2 sentences max
-      const scenariaSentences = scenario.split(/\.\s+/).filter(s => s.trim());
-      scenario = scenariaSentences.slice(0, 2).join('. ').trim();
-      if (!scenario.endsWith('.')) scenario += '.';
 
       return {
-        scenario: scenario,
-        prompt: prompt,
-        rubricCriteria: (q.rubricCriteria || []).slice(0, 3)
+        scenario,
+        prompt,
+        rubricCriteria: q.rubricCriteria || []
       };
     });
 
