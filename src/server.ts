@@ -23,12 +23,14 @@ const matrixPath = path.join(path.dirname(new URL(import.meta.url).pathname.repl
 const practiceQuestionsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/practiceQuestions.json');
 const rubricPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/evaluationRubric.json');
 const questionGenPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/questionGenerationPrompt.json');
+const contextualTrainingDataPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/contextualTrainingData.json');
 
 const trainings = JSON.parse(fs.readFileSync(trainingsPath, 'utf-8'));
 const priorityMatrix = JSON.parse(fs.readFileSync(matrixPath, 'utf-8'));
 const practiceQuestions = JSON.parse(fs.readFileSync(practiceQuestionsPath, 'utf-8'));
 const evaluationRubric = JSON.parse(fs.readFileSync(rubricPath, 'utf-8'));
 const questionGenConfig = JSON.parse(fs.readFileSync(questionGenPath, 'utf-8'));
+const contextualTrainingData = JSON.parse(fs.readFileSync(contextualTrainingDataPath, 'utf-8'));
 
 // Debug: Log SI1 and SI3 priority ranks at startup
 const si1Rank = priorityMatrix.tiers.tier_1_structural.indicators.SI1.priority_rank;
@@ -613,48 +615,10 @@ Start JSON array now:`;
       let scenario = (q.scenario || '').trim();
 
       // SCENARIO TRANSFORMATION
-      // Q1: Convert third-person teacher name to "You are teaching..."
-      if (idx === 0) {
-        // Detect teacher name at start (e.g., "Ms. Ayesha is", "Mr. Bilal is")
-        const teacherMatch = scenario.match(/^(Ms\.|Mr\.|Mrs\.|Ms|Mr|Mrs)\s+\w+\s+is\s+(teaching|starting)/i);
-        if (teacherMatch) {
-          // Extract grade and subject/topic
-          const gradeMatch = scenario.match(/Grade\s+(\d+)/);
-          const subjectMatch = scenario.match(/(?:lesson|class).*?(?:on|about)\s+([^.]+)/i);
-
-          if (gradeMatch) {
-            const grade = gradeMatch[1];
-            const subject = subjectMatch ? subjectMatch[1].trim() : 'lesson';
-
-            // Build first-person scenario
-            const actionMatch = scenario.match(/is\s+\w+[^.]+/);
-            const restOfScenario = actionMatch ? actionMatch[0].replace(/^is\s+\w+/, '').trim() : '';
-
-            scenario = `You are teaching Grade ${grade} ${subject}. You ${restOfScenario}`;
-            // Truncate at first real ending
-            const firstPeriod = scenario.indexOf('.');
-            if (firstPeriod > 0) {
-              scenario = scenario.substring(0, firstPeriod + 1);
-            }
-          }
-        }
-      }
-
-      // Q2: Ensure it starts with "A Pakistani teacher"
-      if (idx === 1 && !scenario.toLowerCase().startsWith('a pakistani teacher')) {
-        // Replace third-person teacher reference with "A Pakistani teacher"
-        scenario = scenario.replace(/^(Ms\.|Mr\.|Mrs\.|Ms|Mr|Mrs)\s+\w+\s+/i, 'A Pakistani teacher ');
-      }
+      // Keep Pakistani teacher names as-is (Ms. Ayesha, Mr. Bilal, etc)
+      // Just ensure scenarios are concise (max 2 sentences)
 
       // PROMPT TRANSFORMATION
-      // Convert imperative verbs to "What would you..." questions
-      prompt = prompt.replace(/^Write\s+/i, 'What would you write to ');
-      prompt = prompt.replace(/^Show\s+/i, 'What would you do to ');
-      prompt = prompt.replace(/^Demonstrate\s+/i, 'What would you do to ');
-      prompt = prompt.replace(/^Rewrite\s+/i, 'How would you rewrite ');
-      prompt = prompt.replace(/^Explain\s+/i, 'What would you say to ');
-      prompt = prompt.replace(/^Create\s+/i, 'What would you create to ');
-
       // Remove compound actions (everything after " and ")
       if (prompt.includes(' and ')) {
         prompt = prompt.split(' and ')[0].trim();
@@ -715,14 +679,22 @@ app.post('/api/save-questions', async (req, res) => {
       CREATE TABLE IF NOT EXISTS generated_practice_questions (
         id SERIAL PRIMARY KEY,
         training_code VARCHAR(50) NOT NULL,
-        indicator_codes TEXT[] NOT NULL,
-        question_id VARCHAR(100) UNIQUE NOT NULL,
+        training_title VARCHAR(255),
+        indicator_code VARCHAR(50) NOT NULL,
+        indicator_rubric JSONB,
         scenario TEXT NOT NULL,
         prompt TEXT NOT NULL,
         rubric_criteria TEXT[] NOT NULL,
+        question_context JSONB,
+        question_id VARCHAR(100) UNIQUE NOT NULL,
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
+
+    // Get indicator rubric and context
+    const indicatorRubric = evaluationRubric[indicatorCode as keyof typeof evaluationRubric];
+    const indicatorContext = contextualTrainingData[indicatorCode as keyof typeof contextualTrainingData];
+    const trainingInfo = trainings[indicatorCode as keyof typeof trainings];
 
     // Save each question
     for (let i = 0; i < questions.length; i++) {
@@ -731,17 +703,24 @@ app.post('/api/save-questions', async (req, res) => {
 
       await dbConn.query(
         `INSERT INTO generated_practice_questions
-         (training_code, indicator_codes, question_id, scenario, prompt, rubric_criteria)
-         VALUES ($1, $2, $3, $4, $5, $6)
+         (training_code, training_title, indicator_code, indicator_rubric, scenario, prompt, rubric_criteria, question_context, question_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (question_id) DO UPDATE SET
-         scenario = $4, prompt = $5, rubric_criteria = $6`,
+         training_title = $2, indicator_rubric = $4, scenario = $5, prompt = $6, rubric_criteria = $7, question_context = $8`,
         [
           trainingCode,
-          [indicatorCode],
-          questionId,
+          trainingInfo?.name || trainingCode,
+          indicatorCode,
+          JSON.stringify(indicatorRubric),
           q.scenario,
           q.prompt,
           q.rubricCriteria,
+          JSON.stringify({
+            context: indicatorContext,
+            failureRate: indicatorContext?.real_performance?.failureRate,
+            tier: indicatorContext?.real_performance?.tier
+          }),
+          questionId,
         ]
       );
     }
