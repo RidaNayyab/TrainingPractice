@@ -674,20 +674,21 @@ app.post('/api/save-questions', async (req, res) => {
 
     await dbConn.connect();
 
-    // Create table if it doesn't exist
+    // Create table if it doesn't exist (with backward compatibility)
     await dbConn.query(`
       CREATE TABLE IF NOT EXISTS generated_practice_questions (
         id SERIAL PRIMARY KEY,
         training_code VARCHAR(50) NOT NULL,
-        training_title VARCHAR(255),
-        indicator_code VARCHAR(50) NOT NULL,
-        indicator_rubric JSONB,
+        indicator_codes TEXT[] NOT NULL,
+        question_id VARCHAR(100) UNIQUE NOT NULL,
         scenario TEXT NOT NULL,
         prompt TEXT NOT NULL,
         rubric_criteria TEXT[] NOT NULL,
-        question_context JSONB,
-        question_id VARCHAR(100) UNIQUE NOT NULL,
-        created_at TIMESTAMP DEFAULT NOW()
+        created_at TIMESTAMP DEFAULT NOW(),
+        training_title VARCHAR(255),
+        indicator_code VARCHAR(50),
+        indicator_rubric JSONB,
+        question_context JSONB
       );
     `);
 
@@ -703,24 +704,25 @@ app.post('/api/save-questions', async (req, res) => {
 
       await dbConn.query(
         `INSERT INTO generated_practice_questions
-         (training_code, training_title, indicator_code, indicator_rubric, scenario, prompt, rubric_criteria, question_context, question_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         (training_code, indicator_codes, question_id, scenario, prompt, rubric_criteria, training_title, indicator_code, indicator_rubric, question_context)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          ON CONFLICT (question_id) DO UPDATE SET
-         training_title = $2, indicator_rubric = $4, scenario = $5, prompt = $6, rubric_criteria = $7, question_context = $8`,
+         scenario = $4, prompt = $5, rubric_criteria = $6, training_title = $7, indicator_code = $8, indicator_rubric = $9, question_context = $10`,
         [
           trainingCode,
-          trainingInfo?.name || trainingCode,
-          indicatorCode,
-          JSON.stringify(indicatorRubric),
+          [indicatorCode],
+          questionId,
           q.scenario,
           q.prompt,
           q.rubricCriteria,
+          trainingInfo?.name || trainingCode,
+          indicatorCode,
+          JSON.stringify(indicatorRubric),
           JSON.stringify({
-            context: indicatorContext,
             failureRate: indicatorContext?.real_performance?.failureRate,
-            tier: indicatorContext?.real_performance?.tier
+            tier: indicatorContext?.real_performance?.tier,
+            context: indicatorContext
           }),
-          questionId,
         ]
       );
     }
