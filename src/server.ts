@@ -607,10 +607,53 @@ Start JSON array now:`;
       return res.status(500).json({ error: 'Claude did not generate valid questions' });
     }
 
-    // Post-process: Keep scenarios and prompts focused
-    const processedQuestions = questions.map((q: any) => {
+    // Post-process: Transform to "You..." scenarios and "What would you..." questions
+    const processedQuestions = questions.map((q: any, idx: number) => {
       let prompt = (q.prompt || '').trim();
       let scenario = (q.scenario || '').trim();
+
+      // SCENARIO TRANSFORMATION
+      // Q1: Convert third-person teacher name to "You are teaching..."
+      if (idx === 0) {
+        // Detect teacher name at start (e.g., "Ms. Ayesha is", "Mr. Bilal is")
+        const teacherMatch = scenario.match(/^(Ms\.|Mr\.|Mrs\.|Ms|Mr|Mrs)\s+\w+\s+is\s+(teaching|starting)/i);
+        if (teacherMatch) {
+          // Extract grade and subject/topic
+          const gradeMatch = scenario.match(/Grade\s+(\d+)/);
+          const subjectMatch = scenario.match(/(?:lesson|class).*?(?:on|about)\s+([^.]+)/i);
+
+          if (gradeMatch) {
+            const grade = gradeMatch[1];
+            const subject = subjectMatch ? subjectMatch[1].trim() : 'lesson';
+
+            // Build first-person scenario
+            const actionMatch = scenario.match(/is\s+\w+[^.]+/);
+            const restOfScenario = actionMatch ? actionMatch[0].replace(/^is\s+\w+/, '').trim() : '';
+
+            scenario = `You are teaching Grade ${grade} ${subject}. You ${restOfScenario}`;
+            // Truncate at first real ending
+            const firstPeriod = scenario.indexOf('.');
+            if (firstPeriod > 0) {
+              scenario = scenario.substring(0, firstPeriod + 1);
+            }
+          }
+        }
+      }
+
+      // Q2: Ensure it starts with "A Pakistani teacher"
+      if (idx === 1 && !scenario.toLowerCase().startsWith('a pakistani teacher')) {
+        // Replace third-person teacher reference with "A Pakistani teacher"
+        scenario = scenario.replace(/^(Ms\.|Mr\.|Mrs\.|Ms|Mr|Mrs)\s+\w+\s+/i, 'A Pakistani teacher ');
+      }
+
+      // PROMPT TRANSFORMATION
+      // Convert imperative verbs to "What would you..." questions
+      prompt = prompt.replace(/^Write\s+/i, 'What would you write to ');
+      prompt = prompt.replace(/^Show\s+/i, 'What would you do to ');
+      prompt = prompt.replace(/^Demonstrate\s+/i, 'What would you do to ');
+      prompt = prompt.replace(/^Rewrite\s+/i, 'How would you rewrite ');
+      prompt = prompt.replace(/^Explain\s+/i, 'What would you say to ');
+      prompt = prompt.replace(/^Create\s+/i, 'What would you create to ');
 
       // Remove compound actions (everything after " and ")
       if (prompt.includes(' and ')) {
