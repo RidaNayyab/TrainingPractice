@@ -607,8 +607,36 @@ Start JSON array now:`;
       return res.status(500).json({ error: 'Claude did not generate valid questions' });
     }
 
-    console.log(`✅ Generated ${questions.length} questions for ${trainingCode}`);
-    res.json({ questions });
+    // Post-process: Keep scenarios and prompts focused
+    const processedQuestions = questions.map((q: any) => {
+      let prompt = (q.prompt || '').trim();
+      let scenario = (q.scenario || '').trim();
+
+      // Remove compound actions (everything after " and ")
+      if (prompt.includes(' and ')) {
+        prompt = prompt.split(' and ')[0].trim();
+      }
+
+      // Ensure prompt ends with question mark
+      if (!prompt.endsWith('?')) {
+        prompt = prompt.replace(/\.$/, '?').trim();
+        if (!prompt.endsWith('?')) prompt += '?';
+      }
+
+      // Keep scenario to 2 sentences max
+      const scenariaSentences = scenario.split(/\.\s+/).filter(s => s.trim());
+      scenario = scenariaSentences.slice(0, 2).join('. ').trim();
+      if (!scenario.endsWith('.')) scenario += '.';
+
+      return {
+        scenario: scenario,
+        prompt: prompt,
+        rubricCriteria: (q.rubricCriteria || []).slice(0, 3)
+      };
+    });
+
+    console.log(`✅ Generated ${processedQuestions.length} questions for ${trainingCode}`);
+    res.json({ questions: processedQuestions });
   } catch (err) {
     console.error('[ERROR] Question generation failed:', err);
     res.status(500).json({ error: err instanceof Error ? err.message : 'Question generation failed' });

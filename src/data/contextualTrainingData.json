@@ -1,0 +1,698 @@
+{
+  "version": "2026-06-16",
+  "database": "fde_production",
+  "observation_period": "April 13 - May 25, 2026",
+  "total_observations": 2614,
+  "unique_teachers": 566,
+  "unique_regions": 6,
+  "rubric_indicators": 23,
+  "sources": {
+    "database": "fde_production (real teacher observations)",
+    "rubric": "evaluationRubric.json (FiCO V3 criteria)",
+    "trainings": "trainings.json (course content)"
+  },
+  "indicator_contexts": {
+    "SI1": {
+      "name": "Instructional Clarity",
+      "description": "The teacher clearly communicates the lesson's purpose and learning expectations — stating goals explicitly and explaining content in a logical, coherent sequence. WHAT TO MEASURE: Whether the teacher states a clear learning goal early in the lesson and whether explanations follow a logical structure with connectors — making content easy to follow.",
+      "rubric": {
+        "criteria_yes": [
+          "States \"Today we will learn [specific skill/concept]\" within first 5 minutes",
+          "Uses precise academic vocabulary (defines terms before using them)",
+          "Explanations follow logical sequence with connectors (\"first,\" \"next,\" \"because,\" \"therefore\")",
+          "Checks for understanding of instructions: \"Does everyone understand what to do?\""
+        ],
+        "criteria_partial": [
+          "Goal mentioned but vague (\"We're learning about animals\" vs. \"classify animals by characteristics\")",
+          "OR explanations use 1-2 logical connectors but lack full coherence",
+          "OR teacher checks understanding only at end, not during explanations"
+        ],
+        "criteria_no": [
+          "No explicit goal statement in first 10 minutes",
+          "Explanations jump between ideas without connectors",
+          "Vague language: \"You know,\" \"this thing,\" \"kind of like\"",
+          "No comprehension checks"
+        ],
+        "ai_detection_method": "Scan first 5 minutes for phrases: \"Today we will,\" \"By the end,\" \"You will learn\". Count logical connectors (first, next, because, therefore, so, then). Identify comprehension check questions. Analyze vocabulary precision vs. vague language frequency.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 16,
+        "no_score_count": 216,
+        "partial_score_count": 123,
+        "yes_score_count": 1029,
+        "total_assessments": 1368,
+        "tier": "foundational",
+        "common_failure_pattern": "Goal stated but vague",
+        "training_focus": "Deepen clarity and coherence"
+      },
+      "training_codes": []
+    },
+    "SI2": {
+      "name": "Logical Flow",
+      "description": "The lesson progresses coherently from opening through instruction to closure. WHAT TO MEASURE: Whether the lesson has three identifiable phases — beginning, middle, and end — with logical topic coherence throughout.",
+      "rubric": {
+        "criteria_yes": [
+          "Clear opening: Introduction of topic/objective within first 5 minutes",
+          "Distinct middle section: Core instruction and activities",
+          "Clear closure: Wrap-up or summary at lesson end",
+          "Transition signals connect segments: \"Now that we've..., let's move to...\", \"Next, we will...\"",
+          "Verbal markers indicate progression: \"First,\" \"Next,\" \"Now,\" \"Finally,\" \"To conclude\"",
+          "Logical topic coherence throughout (doesn't jump randomly)"
+        ],
+        "criteria_partial": [
+          "Basic structure present but transitions are abrupt or unclear",
+          "Missing clear opening OR closure (but has 2 out of 3 phases)",
+          "Some transition language but inconsistent (1-2 markers only)",
+          "Minor topic jumping but generally coherent"
+        ],
+        "criteria_no": [
+          "Disjointed lesson flow with no clear beginning, middle, or end",
+          "No transition signals between activities",
+          "Jumps randomly between topics without connectors",
+          "Lesson feels like disconnected segments"
+        ],
+        "ai_detection_method": "Identify temporal phase markers in first 5 minutes (beginning indicators: \"today we will,\" \"let's start with,\" \"first\"). Identify middle phase markers (instruction/activity language). Identify closure markers (end indicators: \"to conclude,\" \"in summary,\" \"let's review,\" \"finally\"). Count sequential connectors. Detect transition signals. Analyze topic coherence. Track lesson timeline.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 13,
+        "no_score_count": 180,
+        "partial_score_count": 90,
+        "yes_score_count": 1098,
+        "total_assessments": 1368,
+        "tier": "foundational",
+        "common_failure_pattern": "Structure present but transitions abrupt",
+        "training_focus": "Refine transitions and connectors"
+      },
+      "training_codes": []
+    },
+    "SI3": {
+      "name": "Subject Content Accuracy",
+      "description": "The teacher delivers factually correct content, accurate definitions, and clear explanations throughout the lesson. WHAT TO MEASURE: Correctness of facts, definitions, and explanations — distinguishing minor non-critical slips from significant errors that mislead learning.",
+      "rubric": {
+        "criteria_yes": [
+          "All facts stated are conceptually correct",
+          "Definitions accurate and complete",
+          "Responses to student questions are correct and clear",
+          "No misconceptions reinforced",
+          "May include 0–1 minor non-critical slip (e.g., pronunciation, wording, small detail)"
+        ],
+        "criteria_partial": [
+          "Content is mostly accurate",
+          "1–2 minor errors that have minimal impact on learning (e.g., pronunciation, small factual detail, wording)",
+          "Teacher may show uncertainty language (e.g., \"I think…\", \"I'm not sure but…\")",
+          "Core concept is still correctly explained"
+        ],
+        "criteria_no": [
+          "Significant factual errors that mislead learning",
+          "Incorrect definitions or explanations",
+          "Statements that conflict with established facts",
+          "Reinforces misconceptions"
+        ],
+        "ai_detection_method": "Fact extraction and verification against knowledge base. Definition comparison to standard sources. Uncertainty language detection: \"I think,\" \"maybe,\" \"not sure\". Identification of conceptual inaccuracies or misconceptions.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 16,
+        "no_score_count": 222,
+        "partial_score_count": 195,
+        "yes_score_count": 951,
+        "total_assessments": 1368,
+        "tier": "foundational",
+        "common_failure_pattern": "Minor inaccuracies that accumulate",
+        "training_focus": "Deepen content accuracy and confidence"
+      },
+      "training_codes": []
+    },
+    "PIC-1": {
+      "name": "Activities & Tasks Alignment",
+      "description": "The teacher's activities, tasks, and questions are connected to the learning objective and match its cognitive level (remembering, understanding, applying, analyzing, evaluating, creating). WHAT TO MEASURE: Whether activities align with the stated SLO AND match the cognitive level intended in the objective.",
+      "rubric": {
+        "criteria_yes": [
+          "Activities and tasks clearly connected to the stated SLO",
+          "Activities match the cognitive level of the SLO (e.g., analysis tasks for analysis-level objectives)",
+          "Questions asked during lesson match the cognitive demand of the objective"
+        ],
+        "criteria_partial": [
+          "Activities connected to SLO BUT cognitive level doesn't match — SLO requires analysis but activities are recall only",
+          "OR some activities match cognitive level but others don't",
+          "OR activities seem relevant but connection to SLO is unclear"
+        ],
+        "criteria_no": [
+          "Activities appear random and disconnected from stated objective",
+          "Cognitive level completely mismatched — SLO requires higher-order thinking but all tasks are pure recall"
+        ],
+        "ai_detection_method": "Match activity and task keywords to SLO keywords. Extract and classify task verbs (using Bloom's taxonomy). Compare cognitive level of tasks to cognitive level stated in SLO. Assess whether activities conducted relate to stated learning objective.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 12,
+        "no_score_count": 159,
+        "partial_score_count": 96,
+        "yes_score_count": 1113,
+        "total_assessments": 1368,
+        "tier": "foundational",
+        "common_failure_pattern": "Activity connected but cognitive level mismatched",
+        "training_focus": "Tighten activity-objective alignment"
+      },
+      "training_codes": []
+    },
+    "PIC-2": {
+      "name": "Use of Academic Language",
+      "description": "The teacher uses subject-specific terminology correctly and models it for students. WHAT TO MEASURE: Whether technical terms are used accurately, defined when first introduced, and modeled consistently throughout the lesson.",
+      "rubric": {
+        "criteria_yes": [
+          "Uses technical terms correctly: \"photosynthesis,\" \"denominator,\" \"habitat\"",
+          "Defines terms when first used: \"A habitat is where an animal lives\"",
+          "Models proper usage: \"We call this a rectangle because...\"",
+          "Corrects student language: \"We say 'sum' not 'answer' in addition\""
+        ],
+        "criteria_partial": [
+          "Uses some technical terms but inconsistently",
+          "Terms used but not defined"
+        ],
+        "criteria_no": [
+          "Avoids technical vocabulary",
+          "Uses incorrect terminology",
+          "Casual language throughout: \"thingy,\" \"stuff,\" \"that part\""
+        ],
+        "ai_detection_method": "Identify subject-specific vocabulary from glossary. Count academic term frequency. Detect definition patterns: \"is,\" \"means,\" \"called\". Track vague language frequency.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 14.000000000000002,
+        "no_score_count": 192,
+        "partial_score_count": 204,
+        "yes_score_count": 972,
+        "total_assessments": 1368,
+        "tier": "foundational",
+        "common_failure_pattern": "Terms used but not defined",
+        "training_focus": "Deepen academic language modeling"
+      },
+      "training_codes": []
+    },
+    "PIC-3": {
+      "name": "Understanding Student Misconceptions",
+      "description": "The teacher identifies and accurately corrects student errors and misconceptions during the lesson. WHAT TO MEASURE: Whether the teacher recognizes incorrect student responses and corrects them accurately — not just acknowledges them.",
+      "rubric": {
+        "criteria_yes": [
+          "Identifies incorrect student response and corrects it accurately",
+          "Addresses common misconceptions proactively: \"Many people think X, but actually...\"",
+          "Prevents reinforcement of errors — does not accept wrong answers as correct"
+        ],
+        "criteria_partial": [
+          "Recognizes error but correction is incomplete or inaccurate",
+          "Says \"wrong\" but does not provide correct answer"
+        ],
+        "criteria_no": [
+          "Accepts incorrect student answers without correction",
+          "Reinforces misconceptions: \"Yes, that's right\" when answer is wrong",
+          "Provides incorrect corrections"
+        ],
+        "ai_detection_method": "Detect correction patterns: \"not quite,\" \"actually,\" \"that's incorrect,\" \"the correct answer is\". Identify proactive misconception language: \"many people think\". Track incorrect student responses followed by teacher correction. Verify correction accuracy against knowledge base. Distinguish accurate corrections from incomplete or wrong ones.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 27,
+        "no_score_count": 366,
+        "partial_score_count": 111,
+        "yes_score_count": 891,
+        "total_assessments": 1368,
+        "tier": "developing",
+        "common_failure_pattern": "Doesn't proactively surface misconceptions",
+        "training_focus": "Teach how to detect and correct misconceptions"
+      },
+      "training_codes": []
+    },
+    "PIC-4": {
+      "name": "Quality Questioning",
+      "description": "The teacher asks open-ended questions to promote thinking and uses probing follow-ups to deepen student responses. WHAT TO MEASURE: Whether the teacher initiates critical thinking through open-ended questions AND deepens it through probing follow-ups.",
+      "rubric": {
+        "criteria_yes": [
+          "Asks open-ended questions requiring reasoning: \"Why,\" \"How,\" \"What if,\" \"Explain\"",
+          "Does not accept surface answers — probes deeper: \"Why do you think that?\" \"Can you explain more?\" \"How do you know?\"",
+          "Pushes for justification after student responses"
+        ],
+        "criteria_partial": [
+          "Asks open-ended questions but does not probe deeper — accepts first answer and moves on",
+          "OR probes occasionally but majority of questions are closed or recall-based"
+        ],
+        "criteria_no": [
+          "Predominantly yes/no or recall questions throughout",
+          "No probing follow-ups at any point",
+          "Students never pushed beyond one-word or surface answers"
+        ],
+        "ai_detection_method": "Classify all questions (open vs. closed). Calculate % open-ended. Identify probing sequences — student answer followed by teacher follow-up question. Count \"why,\" \"how,\" \"explain,\" \"justify\" after student responses. Track open questions + probing follow-ups separately.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 19,
+        "no_score_count": 264,
+        "partial_score_count": 210,
+        "yes_score_count": 894,
+        "total_assessments": 1368,
+        "tier": "developing",
+        "common_failure_pattern": "Predominantly yes/no questions",
+        "training_focus": "Teach how to craft and follow up with open-ended questions"
+      },
+      "training_codes": []
+    },
+    "PIC-5": {
+      "name": "Effective Feedback",
+      "description": "The teacher provides specific, actionable verbal feedback that helps students understand what is correct, what is incorrect, and how to improve. WHAT TO MEASURE: Whether verbal feedback is specific and actionable — going beyond generic praise or correction to guide student improvement.",
+      "rubric": {
+        "criteria_yes": [
+          "Feedback is specific and directly related to the task or learning objective",
+          "Describes what is correct or incorrect: \"You added instead of multiplied in step 3\"",
+          "Affirms with detail: \"Your answer is correct because you identified the main idea\"",
+          "Guides next steps: \"Try using this formula...\" / \"Next time, start by...\"",
+          "Feedback goes beyond generic praise or correction — students know what to do differently"
+        ],
+        "criteria_partial": [
+          "Feedback present but generic throughout: \"Good job,\" \"Wrong,\" \"Try again\" — no explanation or guidance",
+          "OR feedback is specific occasionally but inconsistent — some responses get quality feedback, others ignored",
+          "OR feedback acknowledges response but does not guide improvement"
+        ],
+        "criteria_no": [
+          "No meaningful feedback given after student responses",
+          "OR all feedback is generic with no guidance whatsoever",
+          "OR feedback is so delayed it is disconnected from the student's response"
+        ],
+        "ai_detection_method": "Identify student response moments in transcript. Check if teacher feedback follows within same exchange. Classify feedback as generic (praise/correction only) vs. specific (error description + guidance). Identify guidance language: \"try,\" \"use,\" \"add,\" \"change,\" \"next time,\" \"instead,\" \"because\". Detect affirmation with detail vs. empty praise.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 18,
+        "no_score_count": 240,
+        "partial_score_count": 234,
+        "yes_score_count": 894,
+        "total_assessments": 1368,
+        "tier": "developing",
+        "common_failure_pattern": "Generic praise: 'Good job'",
+        "training_focus": "Teach specific, actionable feedback model"
+      },
+      "training_codes": []
+    },
+    "PIA-1": {
+      "name": "Prior Knowledge",
+      "description": "The teacher activates students' existing knowledge and builds on their responses to connect to new content. WHAT TO MEASURE: Whether the teacher elicits prior knowledge AND genuinely builds on student responses — both must be present.",
+      "rubric": {
+        "criteria_yes": [
+          "Teacher actively elicits what students already know — through questions, prompts, or references to past learning",
+          "Teacher genuinely builds on student responses — uses what students say to bridge into new content"
+        ],
+        "criteria_partial": [
+          "Asks about prior knowledge but doesn't wait for or build on responses",
+          "OR makes connections to past learning without checking what students actually remember"
+        ],
+        "criteria_no": [
+          "Lesson starts directly with new content",
+          "No mention of previous learning at any point",
+          "Teacher doesn't ask what students remember"
+        ],
+        "ai_detection_method": "Search for recall prompts: \"remember,\" \"last time,\" \"we learned,\" \"what do you know about\". Detect question-response-building sequences. Identify temporal references to past lessons. Track whether teacher uses student responses to bridge into new content.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 19,
+        "no_score_count": 255,
+        "partial_score_count": 90,
+        "yes_score_count": 1023,
+        "total_assessments": 1368,
+        "tier": "developing",
+        "common_failure_pattern": "Asks about prior knowledge but doesn't build on responses",
+        "training_focus": "Teach how to elicit AND build on prior knowledge"
+      },
+      "training_codes": []
+    },
+    "PIA-2": {
+      "name": "Meaningful Connections",
+      "description": "The teacher connects new content to something students can relate to — through real life examples, analogies, or cross-curricular links. WHAT TO MEASURE: Whether connections are explicitly verbalized and clearly explained — not just briefly mentioned.",
+      "rubric": {
+        "criteria_yes": [
+          "Provides concrete real life examples: \"Like when you [familiar experience]...\"",
+          "Uses analogies: \"Think of this as similar to...\"",
+          "Real-world applications: \"You use this when you [daily activity]...\"",
+          "Cross-curricular connections: \"Remember in science when we...\"",
+          "Connection is clearly explained — not just mentioned"
+        ],
+        "criteria_partial": [
+          "Mentions connections but doesn't fully explain them",
+          "Examples are superficial: \"This is like real life\" (without specifics)",
+          "Connection mentioned but not elaborated enough for students to understand how it relates"
+        ],
+        "criteria_no": [
+          "Purely abstract teaching",
+          "No examples, analogies, or applications provided",
+          "Content taught entirely in isolation with nothing relatable"
+        ],
+        "ai_detection_method": "Search for connection phrases: \"like when,\" \"for example,\" \"imagine,\" \"in real life,\" \"similar to,\" \"remember in\". Identify analogy structures: \"X is like Y because...\". Detect cross-curricular references: subject names, previous topic references. Distinguish elaborated connections from superficial mentions. Count distinct connection instances.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 17,
+        "no_score_count": 237,
+        "partial_score_count": 39,
+        "yes_score_count": 1092,
+        "total_assessments": 1368,
+        "tier": "developing",
+        "common_failure_pattern": "Mentions connections but doesn't explain them",
+        "training_focus": "Teach how to elaborate meaningful connections"
+      },
+      "training_codes": []
+    },
+    "MA-0": {
+      "name": "Instructional Model Structure",
+      "description": "The lesson follows a structured instructional model with a clear gradual release of responsibility — moving from teacher-led to student-led work. WHAT TO MEASURE: Whether all three instructional phases are present — teacher modeling (I Do), guided practice (We Do), and independent practice (You Do) — with teacher support visibly decreasing across the lesson.",
+      "rubric": {
+        "criteria_yes": [
+          "Teacher modeling: Teacher demonstrates or explains the new concept/skill",
+          "Guided practice: Teacher and students work together with teacher providing support",
+          "Independent practice: Students work on their own with minimal teacher intervention",
+          "Key evidence: Teacher support and involvement decreases as lesson progresses (from high support to low support)"
+        ],
+        "criteria_partial": [
+          "Two phases present but missing one (commonly skips guided practice, jumping from modeling directly to independent work)",
+          "OR all three phases present but teacher support level remains constant (no gradual release evident)",
+          "OR one phase very brief or unclear"
+        ],
+        "criteria_no": [
+          "Lesson dominated by single mode: all lecture OR all independent work",
+          "No evidence of instructional progression",
+          "Missing two or more phases"
+        ],
+        "ai_detection_method": "Track teacher talk ratio across lesson timeline. Identify three phases: teacher modeling (high teacher talk), collaborative work (mixed voices), independent work (low teacher talk). Verify teacher talk decreases over time (e.g., 80% to 50% to 20%). Detect phase transitions through changes in interaction patterns.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 15,
+        "no_score_count": 210,
+        "partial_score_count": 96,
+        "yes_score_count": 1062,
+        "total_assessments": 1368,
+        "tier": "foundational",
+        "common_failure_pattern": "Skips guided practice",
+        "training_focus": "Deepen I Do/We Do/You Do transitions"
+      },
+      "training_codes": []
+    },
+    "M1": {
+      "name": "Mathematical Discourse & Reasoning",
+      "description": "The teacher pushes students to explain their mathematical thinking and justify their solutions — focusing on process, not just the answer. WHAT TO MEASURE: Whether the teacher asks students to explain HOW they solved a problem and whether students produce audible mathematical reasoning at a level appropriate to their grade.",
+      "rubric": {
+        "criteria_yes": [
+          "Teacher asks reasoning questions: \"How do you know?\" / \"Why does that work?\" / \"Tell me how you solved it\"",
+          "Students produce audible mathematical reasoning — any level accepted: Grade 1-2: \"I counted on my fingers\" / \"because 2 and 2 make 4\"; Grade 3-5: \"I first added then subtracted\" / \"I knew it was wrong because...\"",
+          "Teacher presses for reasoning — does not accept answer-only responses"
+        ],
+        "criteria_partial": [
+          "Teacher asks reasoning questions but accepts one-word or answer-only responses without pressing further",
+          "OR reasoning prompted but students never produce explanation — teacher moves on"
+        ],
+        "criteria_no": [
+          "Entirely answer-focused throughout: \"What is the answer?\" with no how or why",
+          "No student mathematical explanation at any point"
+        ],
+        "ai_detection_method": "Count reasoning questions: \"how,\" \"why,\" \"explain,\" \"justify,\" \"show me\". Detect student explanation patterns — sentence-level mathematical reasoning. Distinguish process-focused vs. answer-focused questions. Track whether teacher presses after student response or accepts answer only.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 27,
+        "no_score_count": 90,
+        "partial_score_count": 42,
+        "yes_score_count": 198,
+        "total_assessments": 330,
+        "tier": "developing",
+        "common_failure_pattern": "Questions are answer-focused, not process-focused",
+        "training_focus": "Teach how to push for mathematical reasoning"
+      },
+      "training_codes": []
+    },
+    "M2": {
+      "name": "Problem-Solving & Productive Struggle",
+      "description": "The teacher presents challenging problems and allows students adequate think time to struggle productively — without rushing in with answers. WHAT TO MEASURE: Whether a genuinely challenging problem is presented, sufficient think time is allowed, and the teacher encourages persistence rather than immediately providing solutions.",
+      "rubric": {
+        "criteria_yes": [
+          "Teacher presents a problem that requires genuine thinking — not routine procedural practice: Multi-step, non-routine, or unfamiliar problem type",
+          "Teacher allows adequate think time appropriate to the problem — does not rush or immediately provide the answer when students struggle",
+          "Encourages persistence: \"Keep trying, you're on the right track\"",
+          "Doesn't immediately give answers when students struggle"
+        ],
+        "criteria_partial": [
+          "Problem is presented but think time is too brief — teacher moves on or gives the answer before students have meaningfully engaged",
+          "OR problem is challenging but teacher's stance undermines struggle — jumps in too quickly, gives hints that remove the challenge",
+          "OR encouragement is present but no real think time is given"
+        ],
+        "criteria_no": [
+          "Only routine procedural practice (no problem-solving)",
+          "Teacher immediately provides solutions",
+          "No think time allowed"
+        ],
+        "ai_detection_method": "Identify problem complexity (multi-step, non-routine). Measure silent think time duration. Detect encouragement language during difficulty.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 30,
+        "no_score_count": 99,
+        "partial_score_count": 45,
+        "yes_score_count": 186,
+        "total_assessments": 330,
+        "tier": "developing",
+        "common_failure_pattern": "Immediately gives answer when student struggles",
+        "training_focus": "Teach wait time management and productive struggle"
+      },
+      "training_codes": []
+    },
+    "S1": {
+      "name": "Inquiry-Based Approach",
+      "description": "The teacher structures concept introduction so students think first — rather than being told the answer immediately. WHAT TO MEASURE: Whether the teacher withholds the answer and creates genuine space for student thinking before explaining — at any point in the lesson.",
+      "rubric": {
+        "criteria_yes": [
+          "When introducing or exploring a concept, teacher does NOT give answer first",
+          "Opens concept with a question, picture, or scenario at any point in lesson",
+          "Students are given genuine space to respond before teacher explains",
+          "Teacher builds on at least one student response to guide toward concept"
+        ],
+        "criteria_partial": [
+          "Teacher attempts inquiry opening but gives answer too quickly",
+          "OR starts with inquiry but shifts to pure transmission and never returns",
+          "OR asks \"what do you think?\" but dismisses all responses and explains anyway"
+        ],
+        "criteria_no": [
+          "Teacher starts directly with definition or explanation",
+          "No space for student thinking at any point",
+          "Pure transmission throughout"
+        ],
+        "ai_detection_method": "Detect inquiry moments at any point — not just lesson opening. Track sequence — does student thinking come BEFORE teacher explanation each time? Identify teacher prompts: \"what do you think,\" \"what do you notice,\" \"what would happen if\". Detect whether teacher builds on at least one student response.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 10,
+        "no_score_count": 9,
+        "partial_score_count": 21,
+        "yes_score_count": 60,
+        "total_assessments": 90,
+        "tier": "foundational",
+        "common_failure_pattern": "Inquiry started but gives answer too quickly",
+        "training_focus": "Extend inquiry wait time"
+      },
+      "training_codes": []
+    },
+    "S2": {
+      "name": "Science Talk & Student Sense-Making",
+      "description": "Students express science ideas in their own words — rather than echoing the teacher or giving one-word answers. WHAT TO MEASURE: Whether students verbally make sense of science concepts in their own words — student talk quality only, not teacher behavior.",
+      "rubric": {
+        "criteria_yes": [
+          "Students express science ideas in their own words — not repeating teacher's exact phrase",
+          "At least 2 students produce sentence-level science responses — not one-word or chorus answers",
+          "Students use any form of reasoning: \"I think because...\" / \"Maybe it's because...\""
+        ],
+        "criteria_partial": [
+          "Some sentence-level responses but majority are one-word or chorus answers",
+          "Students express ideas but only by repeating teacher's exact wording",
+          "Only 1 student produces own-words expression"
+        ],
+        "criteria_no": [
+          "All student responses are one-word, chorus, or direct repetition of teacher's words",
+          "No student expresses a science idea in their own words at any point",
+          "Pure IRE throughout — teacher asks, student gives one word, teacher moves on"
+        ],
+        "ai_detection_method": "Measure student talk length — one-word vs. sentence-level science expression. Detect student-generated language — own words vs. repeating teacher. Identify reasoning language in student responses: \"I think,\" \"because,\" \"maybe,\" \"it could be\". Count students producing sentence-level science responses.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 10,
+        "no_score_count": 9,
+        "partial_score_count": 15,
+        "yes_score_count": 66,
+        "total_assessments": 90,
+        "tier": "foundational",
+        "common_failure_pattern": "Students echo teacher language, not own words",
+        "training_focus": "Elicit student voice in science"
+      },
+      "training_codes": []
+    },
+    "L1": {
+      "name": "Explicit Phonics/Decoding",
+      "description": "The teacher provides structured phonics instruction following a clear pedagogical sequence — from pronunciation and sound identification through to blending and segmenting. WHAT TO MEASURE: Whether phonics instruction follows the correct sequence — pronunciation → initial/final sounds → blending → segmenting — not just whether phonics activities are present.",
+      "rubric": {
+        "criteria_yes": [
+          "Phonics instruction follows clear sequence: pronunciation → initial/final sounds → blending → segmenting",
+          "Each step explicitly taught and modeled: \"/b/ is the sound for letter B\" / \"Listen: /c/ /a/ /t/ = cat\"",
+          "Students practice at each stage — audible student responses present",
+          "Sequence is complete and consistent — no major steps skipped"
+        ],
+        "criteria_partial": [
+          "General phonics sequence present but inconsistencies or omissions evident",
+          "Teacher exhibits overall structure but skips or rushes through one or more steps",
+          "Some student practice present but not at every stage"
+        ],
+        "criteria_no": [
+          "Phonetic drill and sequenced structure completely skipped",
+          "No phonics instruction at any point",
+          "Letters or sounds mentioned but no explicit teaching of correspondence or sequence"
+        ],
+        "ai_detection_method": "Identify pronunciation modeling: teacher isolating and modeling individual sounds. Detect initial/final sound instruction: \"what sound does this start with,\" \"ending sound\". Detect blending language: \"/c/ /a/ /t/ = cat,\" \"put the sounds together\". Detect segmenting practice: \"clap the sounds,\" \"break the word\". Track sequence — are stages appearing in correct order? Monitor student audible responses at each stage.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 72,
+        "no_score_count": 501,
+        "partial_score_count": 18,
+        "yes_score_count": 174,
+        "total_assessments": 693,
+        "tier": "critical",
+        "common_failure_pattern": "Skips sounds-in-isolation step",
+        "training_focus": "Teach the phonics sequence: sounds → blending → segmenting"
+      },
+      "training_codes": []
+    },
+    "L2": {
+      "name": "Comprehension Strategy Instruction",
+      "description": "The teacher explicitly teaches a reading comprehension strategy by naming it, modeling it, and having students practice it. WHAT TO MEASURE: Whether the complete strategy instruction sequence is present — name it, model it, practice it — all three must be present.",
+      "rubric": {
+        "criteria_yes": [
+          "Names the strategy explicitly: \"This is called predicting\" / \"Today we will practice summarizing\"",
+          "Models strategy with text: \"Watch me – I think the next part will be about... because I can see...\"",
+          "Students practice strategy audibly — attempt strategy with teacher guidance"
+        ],
+        "criteria_partial": [
+          "Names and models strategy but no student practice",
+          "OR students practice but strategy never explicitly named or modeled"
+        ],
+        "criteria_no": [
+          "No strategy instruction at any point",
+          "Teacher asks comprehension questions but never teaches HOW to comprehend"
+        ],
+        "ai_detection_method": "Identify strategy names: \"predict,\" \"infer,\" \"visualize,\" \"summarize,\" \"connect\". Detect modeling language: \"watch me,\" \"I think,\" \"I'm going to\". Track student practice — audible student strategy attempts. Verify all 3 steps present in sequence.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 87,
+        "no_score_count": 723,
+        "partial_score_count": 9,
+        "yes_score_count": 96,
+        "total_assessments": 828,
+        "tier": "critical",
+        "common_failure_pattern": "Doesn't name the strategy explicitly",
+        "training_focus": "Teach the explicit 3-step framework for strategy instruction"
+      },
+      "training_codes": []
+    },
+    "L3": {
+      "name": "Reading-Writing Connections",
+      "description": "The teacher explicitly connects reading and writing activities — using text as a model or prompt for student writing. WHAT TO MEASURE: Whether explicit verbal links between reading and writing are present — not just whether both activities happen in the same lesson.",
+      "rubric": {
+        "criteria_yes": [
+          "Explicit links: \"We read about X, now write about...\"",
+          "Uses text as model: \"Notice how the author..., you can do that in your writing\"",
+          "Writing in response to text: \"Write what you think will happen next\"",
+          "Clear connection verbalized"
+        ],
+        "criteria_partial": [
+          "Reading and writing both happen but connection not explicit",
+          "OR weak connection: \"We read, now write\" (no clear link)"
+        ],
+        "criteria_no": [
+          "Reading and writing are completely separate",
+          "OR only reading OR only writing (not both)",
+          "No connection verbalized"
+        ],
+        "ai_detection_method": "Search for \"we read,\" \"the author,\" \"now write,\" \"like in the text\". Identify reading-writing bridge language.",
+        "audio_observable": true
+      },
+      "real_performance": {
+        "fail_rate_percent": 82,
+        "no_score_count": 681,
+        "partial_score_count": 33,
+        "yes_score_count": 114,
+        "total_assessments": 828,
+        "tier": "critical",
+        "common_failure_pattern": "Reading and writing taught as separate activities",
+        "training_focus": "Teach how to explicitly connect reading and writing"
+      },
+      "training_codes": []
+    },
+    "SLGP-1": {
+      "name": "Diversity of Conceptual Expression",
+      "description": "Do students express the concept in varied ways — or do they all repeat the teacher's exact words?",
+      "rubric": {
+        "criteria_yes": [],
+        "criteria_partial": [],
+        "criteria_no": [],
+        "audio_observable": true
+      },
+      "real_performance": null,
+      "training_codes": []
+    },
+    "SLGP-2": {
+      "name": "Student Reasoning in Responses",
+      "description": "Do students explain why an answer is correct — not just what the answer is?",
+      "rubric": {
+        "criteria_yes": [],
+        "criteria_partial": [],
+        "criteria_no": [],
+        "audio_observable": true
+      },
+      "real_performance": null,
+      "training_codes": []
+    },
+    "SLGP-3": {
+      "name": "Student-Initiated Questions",
+      "description": "Do any students ask a genuine content question — showing they have processed the concept enough to identify a gap or an extension?",
+      "rubric": {
+        "criteria_yes": [],
+        "criteria_partial": [],
+        "criteria_no": [],
+        "audio_observable": true
+      },
+      "real_performance": null,
+      "training_codes": []
+    },
+    "SLGP-4": {
+      "name": "Spontaneous Transfer and Connection-Making",
+      "description": "Does any student connect the lesson concept to something outside the lesson — from their own life, a previous lesson, or another subject?",
+      "rubric": {
+        "criteria_yes": [],
+        "criteria_partial": [],
+        "criteria_no": [],
+        "audio_observable": true
+      },
+      "real_performance": null,
+      "training_codes": []
+    },
+    "SLGP-5": {
+      "name": "Visible Learning Progression Across the Lesson",
+      "description": "Do student responses about the concept sound more complete and accurate by the end of the lesson than at the beginning?",
+      "rubric": {
+        "criteria_yes": [],
+        "criteria_partial": [],
+        "criteria_no": [],
+        "audio_observable": true
+      },
+      "real_performance": null,
+      "training_codes": []
+    }
+  }
+}

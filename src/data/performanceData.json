@@ -1,0 +1,439 @@
+{
+  "version": "Database Performance Analysis v1",
+  "analysisDate": "2026-06-16",
+  "totalObservations": 484,
+  "performanceTiers": {
+    "critical": {
+      "displayName": "Critical Gaps (72-87% failure)",
+      "focus": "Framework & Methodology",
+      "description": "Teachers lack structured frameworks for discipline-specific instruction",
+      "questionApproach": "Framework-focused - teach the HOW and WHY of structured teaching",
+      "indicators": ["L1", "L2", "L3", "PIA-4", "PIA-3"]
+    },
+    "developing": {
+      "displayName": "Developing Areas (27-48% failure)",
+      "focus": "Responsiveness & Depth",
+      "description": "Teachers know techniques but struggle with real-time adaptation",
+      "questionApproach": "Scenario-focused - teach WHEN and HOW to adjust on the fly",
+      "indicators": ["PIC-3", "PIC-4", "PIC-5", "M1", "M2", "PIA-5"]
+    },
+    "foundational": {
+      "displayName": "Foundational Mastery (12-19% failure)",
+      "focus": "Extension & Consistency",
+      "description": "Teachers demonstrate these but inconsistently or at surface level",
+      "questionApproach": "Depth-focused - deepen mastery, explore edge cases",
+      "indicators": ["SI1", "SI2", "SI3", "PIC-1", "PIC-2", "MA-0"]
+    }
+  },
+  "indicatorDetails": {
+    "L2": {
+      "name": "Comprehension Strategy Instruction",
+      "failureRate": 0.87,
+      "tier": "critical",
+      "totalAssessments": 828,
+      "failureCount": 723,
+      "partialCount": 9,
+      "successCount": 96,
+      "commonGaps": [
+        "Doesn't name the strategy explicitly",
+        "Models but doesn't have students practice",
+        "Skips one of the three steps (name/model/practice)"
+      ],
+      "trainingFocus": "Teach the explicit 3-step framework for strategy instruction",
+      "questionFramework": "FRAMEWORK - Structure, sequence, components"
+    },
+    "L3": {
+      "name": "Reading-Writing Connections",
+      "failureRate": 0.82,
+      "tier": "critical",
+      "totalAssessments": 828,
+      "failureCount": 681,
+      "partialCount": 33,
+      "successCount": 114,
+      "commonGaps": [
+        "Reading and writing taught as separate activities",
+        "No explicit verbal bridge between the two",
+        "Text not used as model for writing"
+      ],
+      "trainingFocus": "Teach how to explicitly connect reading and writing",
+      "questionFramework": "FRAMEWORK - How to integrate two domains"
+    },
+    "L1": {
+      "name": "Explicit Phonics/Decoding",
+      "failureRate": 0.72,
+      "tier": "critical",
+      "totalAssessments": 693,
+      "failureCount": 501,
+      "partialCount": 18,
+      "successCount": 174,
+      "commonGaps": [
+        "Skips sounds-in-isolation step",
+        "Jumps to blending without solid foundation",
+        "No consistent sequence across lessons"
+      ],
+      "trainingFocus": "Teach the phonics sequence: sounds → blending → segmenting",
+      "questionFramework": "FRAMEWORK - Proper pedagogical sequence"
+    },
+    "PIA-4": {
+      "name": "Responsive Re-explanation",
+      "failureRate": 0.48,
+      "tier": "critical",
+      "totalAssessments": 1281,
+      "failureCount": 615,
+      "partialCount": 9,
+      "successCount": 657,
+      "commonGaps": [
+        "Repeats same explanation when students don't understand",
+        "Doesn't try different examples or analogies",
+        "Moves on without ensuring understanding"
+      ],
+      "trainingFocus": "Build a toolkit of alternative explanations and examples",
+      "questionFramework": "FRAMEWORK - Multiple ways to explain same concept"
+    },
+    "PIA-3": {
+      "name": "Catering to Learning Levels",
+      "failureRate": 0.35,
+      "tier": "critical",
+      "totalAssessments": 1296,
+      "failureCount": 453,
+      "partialCount": 99,
+      "successCount": 744,
+      "commonGaps": [
+        "Same instruction for all students",
+        "No scaffolding for struggling learners",
+        "No extension for advanced learners"
+      ],
+      "trainingFocus": "Teach differentiation: scaffold down, extend up",
+      "questionFramework": "FRAMEWORK - How to support different learner levels"
+    },
+    "M2": {
+      "name": "Problem-Solving & Productive Struggle",
+      "failureRate": 0.30,
+      "tier": "developing",
+      "totalAssessments": 330,
+      "failureCount": 99,
+      "partialCount": 45,
+      "successCount": 186,
+      "commonGaps": [
+        "Immediately gives answer when student struggles",
+        "Doesn't allow adequate think time",
+        "Doesn't encourage persistence"
+      ],
+      "trainingFocus": "Teach wait time management and productive struggle",
+      "questionFramework": "SCENARIO - When student struggles, what do you do?"
+    },
+    "PIA-5": {
+      "name": "Student Agency & Participation",
+      "failureRate": 0.29,
+      "tier": "developing",
+      "totalAssessments": 1368,
+      "failureCount": 396,
+      "partialCount": 234,
+      "successCount": 738,
+      "commonGaps": [
+        "Teacher makes all decisions",
+        "Limited student choice",
+        "Students are passive recipients, not active agents"
+      ],
+      "trainingFocus": "Teach how to give genuine student choice and leadership",
+      "questionFramework": "SCENARIO - How would you give students a real choice?"
+    },
+    "M1": {
+      "name": "Mathematical Discourse & Reasoning",
+      "failureRate": 0.27,
+      "tier": "developing",
+      "totalAssessments": 330,
+      "failureCount": 90,
+      "partialCount": 42,
+      "successCount": 198,
+      "commonGaps": [
+        "Questions are answer-focused, not process-focused",
+        "Doesn't ask 'why' or 'how do you know'",
+        "Accepts one-word answers"
+      ],
+      "trainingFocus": "Teach how to push for mathematical reasoning",
+      "questionFramework": "SCENARIO - Student gives answer. What's your follow-up?"
+    },
+    "PIC-3": {
+      "name": "Understanding Student Misconceptions",
+      "failureRate": 0.27,
+      "tier": "developing",
+      "totalAssessments": 1368,
+      "failureCount": 366,
+      "partialCount": 111,
+      "successCount": 891,
+      "commonGaps": [
+        "Doesn't proactively surface misconceptions",
+        "Accepts wrong answers as correct",
+        "Doesn't correct accurately"
+      ],
+      "trainingFocus": "Teach how to detect and correct misconceptions",
+      "questionFramework": "SCENARIO - Student has misconception. How do you respond?"
+    },
+    "PIC-4": {
+      "name": "Quality Questioning",
+      "failureRate": 0.19,
+      "tier": "developing",
+      "totalAssessments": 1368,
+      "failureCount": 264,
+      "partialCount": 210,
+      "successCount": 894,
+      "commonGaps": [
+        "Predominantly yes/no questions",
+        "Doesn't probe for deeper thinking",
+        "Accepts surface answers"
+      ],
+      "trainingFocus": "Teach how to craft and follow up with open-ended questions",
+      "questionFramework": "REWRITE - Make these questions more open-ended"
+    },
+    "PIA-1": {
+      "name": "Prior Knowledge",
+      "failureRate": 0.19,
+      "tier": "developing",
+      "totalAssessments": 1368,
+      "failureCount": 255,
+      "partialCount": 90,
+      "successCount": 1023,
+      "commonGaps": [
+        "Asks about prior knowledge but doesn't build on responses",
+        "Doesn't wait for student input"
+      ],
+      "trainingFocus": "Teach how to elicit AND build on prior knowledge",
+      "questionFramework": "SCENARIO - How would you activate and build on prior knowledge?"
+    },
+    "PIC-5": {
+      "name": "Effective Feedback",
+      "failureRate": 0.18,
+      "tier": "developing",
+      "totalAssessments": 1368,
+      "failureCount": 240,
+      "partialCount": 234,
+      "successCount": 894,
+      "commonGaps": [
+        "Generic praise: 'Good job'",
+        "Criticism without guidance: 'Wrong'",
+        "Feedback not connected to action"
+      ],
+      "trainingFocus": "Teach specific, actionable feedback model",
+      "questionFramework": "REWRITE - Make this feedback more specific and actionable"
+    },
+    "PIA-2": {
+      "name": "Meaningful Connections",
+      "failureRate": 0.17,
+      "tier": "developing",
+      "totalAssessments": 1368,
+      "failureCount": 237,
+      "partialCount": 39,
+      "successCount": 1092,
+      "commonGaps": [
+        "Mentions connections but doesn't explain them",
+        "Examples are superficial"
+      ],
+      "trainingFocus": "Teach how to elaborate meaningful connections",
+      "questionFramework": "SCENARIO - How would you connect this to student experience?"
+    },
+    "SI3": {
+      "name": "Subject Content Accuracy",
+      "failureRate": 0.16,
+      "tier": "foundational",
+      "totalAssessments": 1368,
+      "failureCount": 222,
+      "partialCount": 195,
+      "successCount": 951,
+      "commonGaps": [
+        "Minor inaccuracies that accumulate",
+        "Uncertainty language without follow-up"
+      ],
+      "trainingFocus": "Deepen content accuracy and confidence",
+      "questionFramework": "SCENARIO - Handle uncertain content, verify accuracy"
+    },
+    "SI1": {
+      "name": "Instructional Clarity",
+      "failureRate": 0.16,
+      "tier": "foundational",
+      "totalAssessments": 1368,
+      "failureCount": 216,
+      "partialCount": 123,
+      "successCount": 1029,
+      "commonGaps": [
+        "Goal stated but vague",
+        "Logical flow present but could be more explicit"
+      ],
+      "trainingFocus": "Deepen clarity and coherence",
+      "questionFramework": "REWRITE - Make this goal more specific and measurable"
+    },
+    "MA-0": {
+      "name": "Instructional Model Structure",
+      "failureRate": 0.15,
+      "tier": "foundational",
+      "totalAssessments": 1368,
+      "failureCount": 210,
+      "partialCount": 96,
+      "successCount": 1062,
+      "commonGaps": [
+        "Skips guided practice",
+        "No gradual release evident"
+      ],
+      "trainingFocus": "Deepen I Do/We Do/You Do transitions",
+      "questionFramework": "SCENARIO - Design a lesson with clear gradual release"
+    },
+    "PIC-2": {
+      "name": "Use of Academic Language",
+      "failureRate": 0.14,
+      "tier": "foundational",
+      "totalAssessments": 1368,
+      "failureCount": 192,
+      "partialCount": 204,
+      "successCount": 972,
+      "commonGaps": [
+        "Terms used but not defined",
+        "Inconsistent use of academic vocabulary"
+      ],
+      "trainingFocus": "Deepen academic language modeling",
+      "questionFramework": "SCENARIO - Model precise academic language consistently"
+    },
+    "SI2": {
+      "name": "Logical Flow",
+      "failureRate": 0.13,
+      "tier": "foundational",
+      "totalAssessments": 1368,
+      "failureCount": 180,
+      "partialCount": 90,
+      "successCount": 1098,
+      "commonGaps": [
+        "Structure present but transitions abrupt",
+        "Flow exists but could be smoother"
+      ],
+      "trainingFocus": "Refine transitions and connectors",
+      "questionFramework": "SCENARIO - Add smooth transitions to lesson phases"
+    },
+    "PIC-1": {
+      "name": "Activities & Tasks Alignment",
+      "failureRate": 0.12,
+      "tier": "foundational",
+      "totalAssessments": 1368,
+      "failureCount": 159,
+      "partialCount": 96,
+      "successCount": 1113,
+      "commonGaps": [
+        "Activity connected but cognitive level mismatched",
+        "Tasks present but not tightly aligned"
+      ],
+      "trainingFocus": "Tighten activity-objective alignment",
+      "questionFramework": "SCENARIO - Design activities that match cognitive demand"
+    },
+    "S1": {
+      "name": "Inquiry-Based Approach",
+      "failureRate": 0.10,
+      "tier": "foundational",
+      "totalAssessments": 90,
+      "failureCount": 9,
+      "partialCount": 21,
+      "successCount": 60,
+      "commonGaps": ["Inquiry started but gives answer too quickly"],
+      "trainingFocus": "Extend inquiry wait time",
+      "questionFramework": "SCENARIO - How would you extend inquiry without answering?"
+    },
+    "S2": {
+      "name": "Science Talk & Student Sense-Making",
+      "failureRate": 0.10,
+      "tier": "foundational",
+      "totalAssessments": 90,
+      "failureCount": 9,
+      "partialCount": 15,
+      "successCount": 66,
+      "commonGaps": ["Students echo teacher language, not own words"],
+      "trainingFocus": "Elicit student voice in science",
+      "questionFramework": "SCENARIO - How would you get students to explain in own words?"
+    }
+  },
+  "clusters": {
+    "literacyDeficit": {
+      "name": "Literacy Instruction Framework Gap",
+      "indicators": ["L1", "L2", "L3"],
+      "avgFailureRate": 0.80,
+      "rootCause": "Teachers lack structured frameworks for teaching reading and writing",
+      "trainingImperative": "Teach the HOW and WHY of literacy pedagogy",
+      "questionStyle": "FRAMEWORK - Sequence, structure, components",
+      "exampleQuestions": [
+        "Design a 2-week phonics sequence starting from basics",
+        "Teach a comprehension strategy using the 3-step model",
+        "Show how you'd connect a reading assignment to a writing task"
+      ]
+    },
+    "responsivenessDeficit": {
+      "name": "Real-Time Adaptation & Differentiation Gap",
+      "indicators": ["PIA-3", "PIA-4", "PIA-5", "M2"],
+      "avgFailureRate": 0.33,
+      "rootCause": "Teachers don't recognize struggle signals or lack adaptation toolkit",
+      "trainingImperative": "Teach WHEN to adapt and HOW to respond",
+      "questionStyle": "SCENARIO - Student struggles, what's your next move?",
+      "exampleQuestions": [
+        "Your student didn't understand. What's Plan B?",
+        "Show me how you'd teach this to struggling vs. advanced students",
+        "How would you handle a student who needs more wait time?",
+        "Give students a genuine choice. What would that look like?"
+      ]
+    },
+    "executionInconsistency": {
+      "name": "High-Value Technique Inconsistency Gap",
+      "indicators": ["PIC-3", "PIC-4", "PIC-5", "M1", "PIA-1", "PIA-2"],
+      "avgFailureRate": 0.21,
+      "rootCause": "Teachers know techniques but apply them inconsistently or shallowly",
+      "trainingImperative": "Deepen consistency and quality of execution",
+      "questionStyle": "REWRITE or SCENARIO - Improve the quality/consistency",
+      "exampleQuestions": [
+        "Rewrite these questions to be more open-ended",
+        "A student says X. Write specific feedback, not generic praise",
+        "What follow-up would deepen this question?",
+        "How would you connect this to their prior knowledge?"
+      ]
+    },
+    "foundationalStrength": {
+      "name": "Structural & Basic Pedagogy Mastery",
+      "indicators": ["SI1", "SI2", "SI3", "PIC-1", "PIC-2", "MA-0"],
+      "avgFailureRate": 0.15,
+      "rootCause": "Teachers generally master these; focus on refinement",
+      "trainingImperative": "Deepen mastery and extend to edge cases",
+      "questionStyle": "EXTENSION - Edge cases, synthesis, depth",
+      "exampleQuestions": [
+        "In what situation might this foundational skill fail?",
+        "How would you refine this for an advanced class?",
+        "When would you break the typical structure? Why?"
+      ]
+    }
+  },
+  "recommendedQuestionWeighting": {
+    "byTier": {
+      "critical": {
+        "weight": "60%",
+        "rationale": "Highest failure rates, need intensive focus on frameworks"
+      },
+      "developing": {
+        "weight": "30%",
+        "rationale": "Mid-range failures, need scenario-based learning"
+      },
+      "foundational": {
+        "weight": "10%",
+        "rationale": "Low failure rates, focus on depth/edge cases"
+      }
+    }
+  },
+  "questionDifficultyMapping": {
+    "critical": {
+      "difficulty": "Basic → Intermediate",
+      "focus": "Understanding frameworks and structure",
+      "examples": "Step-by-step processes, sequences, components"
+    },
+    "developing": {
+      "difficulty": "Intermediate → Advanced",
+      "focus": "Applying techniques in varied scenarios",
+      "examples": "What-if situations, adaptation, real-time decisions"
+    },
+    "foundational": {
+      "difficulty": "Advanced",
+      "focus": "Extending beyond basic, edge cases, synthesis",
+      "examples": "When to break the rule, why this works, exceptions"
+    }
+  }
+}
