@@ -667,12 +667,16 @@ app.post('/api/save-questions', async (req, res) => {
       return res.status(400).json({ error: 'trainingCode and questions array are required' });
     }
 
+    console.log(`[SAVE] Starting save for ${trainingCode}, ${questions.length} questions`);
+
     // Add error handler before connecting
     dbConn.on('error', (err) => {
       console.error('[ERROR] Database connection error:', err);
     });
 
+    console.log(`[SAVE] Connecting to database: ${process.env.PGHOST}:${process.env.PGPORT}`);
     await dbConn.connect();
+    console.log(`[SAVE] Connected successfully`);
 
     // Create table if it doesn't exist (with backward compatibility)
     await dbConn.query(`
@@ -702,7 +706,9 @@ app.post('/api/save-questions', async (req, res) => {
       const q = questions[i];
       const questionId = `${trainingCode}-q${i + 1}`;
 
-      await dbConn.query(
+      console.log(`[SAVE] Inserting question ${i + 1}/${questions.length}: ${questionId}`);
+
+      const insertResult = await dbConn.query(
         `INSERT INTO generated_practice_questions
          (training_code, indicator_codes, question_id, scenario, prompt, rubric_criteria, training_title, indicator_code, indicator_rubric, question_context)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -725,6 +731,7 @@ app.post('/api/save-questions', async (req, res) => {
           }),
         ]
       );
+      console.log(`[SAVE] Insert successful for ${questionId}, rows affected: ${insertResult.rowCount}`);
     }
 
     console.log(`✅ Saved ${questions.length} questions for ${trainingCode}`);
