@@ -440,3 +440,71 @@
   margin-bottom: 5px;
   line-height: 1.4;
 }
+
+.criterion-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.criterion-row .edit-textarea {
+  flex: 1;
+}
+
+.btn-delete-criterion {
+  background: #ffeaea;
+  border: 1px solid #f5b5b5;
+  color: #c33;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.btn-delete-criterion:hover {
+  background: #ffd0d0;
+  transform: scale(1.05);
+}
+
+.btn-add-criterion {
+  background: #e8f4ea;
+  border: 1px solid #b5d5b8;
+  color: #2a7a35;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 600;
+  margin-top: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-add-criterion:hover {
+  background: #d0ead4;
+  transform: scale(1.02);
+}
+
+.gap-notice {
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-left: 4px solid #ffa726;
+  padding: 14px 18px;
+  border-radius: 6px;
+  color: #6b4f10;
+  margin-top: 4px;
+}
+
+.gap-notice strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.95em;
+}
+
+.gap-notice p {
+  margin: 0;
+  font-size: 0.9em;
+  line-height: 1.45;
+}

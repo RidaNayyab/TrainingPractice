@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { Client } from 'pg';
+import { Client, Pool } from 'pg';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
@@ -18,12 +18,12 @@ app.use('/api/upload-audio', express.raw({ type: 'audio/*', limit: '50mb' }));
 app.use(express.json({ limit: '50mb' }));
 
 // Load data files
-const trainingsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/trainings.json');
-const matrixPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/indicator-priority-matrix.json');
-const practiceQuestionsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/practiceQuestions.json');
-const rubricPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/evaluationRubric.json');
-const questionGenPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/questionGenerationPrompt.json');
-const contextualTrainingDataPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/contextualTrainingData.json');
+const trainingsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'data/trainings.json');
+const matrixPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'data/indicator-priority-matrix.json');
+const practiceQuestionsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'data/practiceQuestions.json');
+const rubricPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'data/evaluationRubric.json');
+const questionGenPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'data/questionGenerationPrompt.json');
+const contextualTrainingDataPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'data/contextualTrainingData.json');
 
 const trainings = JSON.parse(fs.readFileSync(trainingsPath, 'utf-8'));
 const priorityMatrix = JSON.parse(fs.readFileSync(matrixPath, 'utf-8'));
@@ -31,6 +31,41 @@ const practiceQuestions = JSON.parse(fs.readFileSync(practiceQuestionsPath, 'utf
 const evaluationRubric = JSON.parse(fs.readFileSync(rubricPath, 'utf-8'));
 const questionGenConfig = JSON.parse(fs.readFileSync(questionGenPath, 'utf-8'));
 const contextualTrainingData = JSON.parse(fs.readFileSync(contextualTrainingDataPath, 'utf-8'));
+
+// Parse FICO V3 rubric markdown into { indicatorCode: rubricSection } map + description map for DB matching
+const ficoRubricPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..', '.claude', 'context', 'fico_v3_indicator_rubric.md');
+const ficoRubricMap: Record<string, string> = {};
+const ficoDescMap: Record<string, string> = {};
+try {
+  const ficoRaw = fs.readFileSync(ficoRubricPath, 'utf-8');
+  const headingRegex = /^(#{3,4}) ([A-Z]+-?\d+) — (.+?)$/gm;
+  const matches: Array<{ code: string; start: number; level: number }> = [];
+  let m: RegExpExecArray | null;
+  while ((m = headingRegex.exec(ficoRaw)) !== null) {
+    matches.push({ code: m[2], start: m.index, level: m[1].length });
+  }
+  for (let i = 0; i < matches.length; i++) {
+    const cur = matches[i];
+    let end = ficoRaw.length;
+    for (let j = i + 1; j < matches.length; j++) {
+      if (matches[j].level <= cur.level) { end = matches[j].start; break; }
+    }
+    // Stop at the next "## " section header — search from after the heading line so we don't match the current heading itself
+    const lineEnd = ficoRaw.indexOf('\n', cur.start);
+    const searchFrom = lineEnd === -1 ? cur.start : lineEnd + 1;
+    const sectionMatch = ficoRaw.slice(searchFrom).search(/^## [^#]/m);
+    if (sectionMatch !== -1 && searchFrom + sectionMatch < end) {
+      end = searchFrom + sectionMatch;
+    }
+    const section = ficoRaw.slice(cur.start, end).trim();
+    ficoRubricMap[cur.code] = section;
+    const descMatch = section.match(/\*\*Description:\*\*\s*([^\n]+)/);
+    if (descMatch) ficoDescMap[cur.code] = descMatch[1].trim();
+  }
+  console.log(`[DEBUG] FICO rubric loaded: ${Object.keys(ficoRubricMap).length} indicators, ${Object.keys(ficoDescMap).length} with descriptions`);
+} catch (e) {
+  console.warn(`[WARN] Could not load FICO rubric from ${ficoRubricPath}:`, (e as any).message);
+}
 
 // Debug: Log SI1 and SI3 priority ranks at startup
 const si1Rank = priorityMatrix.tiers.tier_1_structural.indicators.SI1.priority_rank;
@@ -47,6 +82,98 @@ const dbClient = new Client({
   password: process.env.PGPASSWORD,
   database: process.env.PGDATABASE,
 });
+
+// NIETE FDE production pool — read-only, SSL required. Lazy: only connects when env vars are present.
+let fdePool: Pool | null = null;
+const fdeHost = process.env.FDE_DATABASE_HOST || process.env.PROD_FDE_DATABASE_HOST;
+const fdeUser = process.env.FDE_DATABASE_USER || process.env.PROD_FDE_DATABASE_USER;
+const fdePassword = process.env.FDE_DATABASE_PASSWORD || process.env.PROD_FDE_DATABASE_PASSWORD;
+const fdeName = process.env.FDE_DATABASE_NAME || process.env.PROD_FDE_DATABASE_NAME;
+const fdePort = process.env.FDE_DATABASE_PORT || '2344';
+if (fdeHost && fdeUser && fdePassword && fdeName) {
+  fdePool = new Pool({
+    host: fdeHost,
+    port: parseInt(fdePort),
+    user: fdeUser,
+    password: fdePassword,
+    database: fdeName,
+    ssl: { rejectUnauthorized: false },
+  });
+  console.log(`[DEBUG] NIETE FDE pool configured (host=${fdeHost}, port=${fdePort}, db=${fdeName})`);
+} else {
+  console.log('[DEBUG] NIETE FDE not configured (missing FDE_DATABASE_* env vars) — falling back to Railway observations only');
+}
+
+// Cache of failure-rate stats per indicator, sourced from NIETE FDE 300-observation study
+const fdeIndicatorStats: Map<string, { total: number; noCount: number; partialCount: number; yesCount: number; failureRate: number }> = new Map();
+
+async function loadFdeIndicatorStats() {
+  if (!fdePool) return;
+  if (Object.keys(ficoDescMap).length === 0) {
+    console.warn('[WARN] FICO descriptions not loaded — skipping NIETE stats (cannot map question prompts to indicator codes)');
+    return;
+  }
+  try {
+    // Step 1: build question_id → indicator_code mapping by matching DB prompts to rubric descriptions
+    const qResult = await fdePool.query(`
+      SELECT q.id::text AS question_id, q.prompt
+      FROM fde_production.coaching_observationquestion q
+      JOIN fde_production.coaching_observationsection sec ON sec.id = q.section_id
+      WHERE q.is_scored = true AND sec.title LIKE '%V3%'
+    `);
+
+    const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+    const questionIdToCode = new Map<string, string>();
+    for (const row of qResult.rows) {
+      const promptNorm = norm(row.prompt);
+      for (const [code, desc] of Object.entries(ficoDescMap)) {
+        if (promptNorm.startsWith(norm(desc).slice(0, 60))) {
+          questionIdToCode.set(row.question_id, code);
+          break;
+        }
+      }
+    }
+    console.log(`[DEBUG] NIETE FDE mapped ${questionIdToCode.size}/${qResult.rows.length} V3 questions to rubric indicators`);
+
+    // Step 2: aggregate score buckets per question_id across all completed FICO V3 observations
+    const sResult = await fdePool.query(`
+      SELECT a.question_id::text AS question_id, opt.score_type, COUNT(*)::int AS n
+      FROM fde_production.coaching_observation co
+      JOIN fde_production.coaching_observationanswer a ON a.observation_id = co.id
+      LEFT JOIN fde_production.coaching_questionoption opt ON opt.id = a.single_choice_option_id
+      WHERE co.template_id = 2
+        AND co.status = 'completed'
+        AND opt.score_type IN ('yes','partial','no')
+      GROUP BY 1, 2
+    `);
+
+    const byCode: Record<string, { yes: number; partial: number; no: number }> = {};
+    for (const row of sResult.rows) {
+      const code = questionIdToCode.get(row.question_id);
+      if (!code) continue;
+      if (!byCode[code]) byCode[code] = { yes: 0, partial: 0, no: 0 };
+      byCode[code][row.score_type as 'yes' | 'partial' | 'no'] += row.n;
+    }
+
+    for (const [code, counts] of Object.entries(byCode)) {
+      const total = counts.yes + counts.partial + counts.no;
+      if (total === 0) continue;
+      fdeIndicatorStats.set(code, {
+        total,
+        yesCount: counts.yes,
+        partialCount: counts.partial,
+        noCount: counts.no,
+        failureRate: Math.round(1000 * (counts.no + 0.5 * counts.partial) / total) / 10,
+      });
+    }
+    console.log(`[DEBUG] NIETE FDE stats loaded for ${fdeIndicatorStats.size} indicators across ${sResult.rows.length} score rows`);
+    for (const [code, stats] of fdeIndicatorStats.entries()) {
+      console.log(`  ${code}: ${stats.failureRate}% miss rate (${stats.noCount} NO / ${stats.partialCount} PARTIAL / ${stats.yesCount} YES, n=${stats.total})`);
+    }
+  } catch (e) {
+    console.warn('[WARN] Could not load NIETE FDE stats:', (e as any).message);
+  }
+}
 
 async function initialize() {
   try {
@@ -80,11 +207,14 @@ async function initialize() {
 
     observationsCache = obsResult.rows;
 
-    console.log(`✅ Loaded ${observationsCache.length} observations`);
+    console.log(`✅ Loaded ${observationsCache.length} observations (Railway)`);
     console.log(`✅ Loaded tier data for ${tierCache.size} teachers`);
 
     await dbClient.end();
-    console.log('📴 DB closed');
+    console.log('📴 Railway DB closed');
+
+    // Probe NIETE FDE in parallel with Railway — non-fatal if unavailable
+    await loadFdeIndicatorStats();
   } catch (err) {
     console.error('❌ Error:', err);
     process.exit(1);
@@ -444,8 +574,19 @@ app.post('/api/generate-questions', async (req, res) => {
     }
 
     const questionCount = questionGenConfig.questionsPerTraining || 2;
-    const userMessage = `TASK: Generate exactly ${questionCount} practice questions.
+    const indicatorRubric = indicatorCode ? ficoRubricMap[indicatorCode] : undefined;
+    const indicatorStats = indicatorCode ? fdeIndicatorStats.get(indicatorCode) : undefined;
 
+    const rubricBlock = indicatorRubric
+      ? `\n\nFICO V3 RUBRIC FOR ${indicatorCode} (authoritative — questions must enable teachers to demonstrate the YES-criteria; rubricCriteria field MUST be drawn from the observable evidence below):\n${indicatorRubric}\n`
+      : '';
+
+    const statsBlock = indicatorStats
+      ? `\n\nREAL OBSERVATION DATA (NIETE FDE, ${indicatorStats.total} scored observations on ${indicatorCode}): ${indicatorStats.failureRate}% of teachers miss this indicator (${indicatorStats.noCount} NO, ${indicatorStats.partialCount} PARTIAL, ${indicatorStats.yesCount} YES). Ground scenarios in the failure patterns teachers actually exhibit.\n`
+      : '';
+
+    const userMessage = `TASK: Generate exactly ${questionCount} practice questions that let a Pakistani government-school teacher PRACTICE the ${indicatorCode || trainingCode} indicator until mastery.
+${rubricBlock}${statsBlock}
 INPUT:
 Code: ${trainingCode}
 Indicator: ${indicatorCode}
@@ -466,9 +607,11 @@ EXAMPLE:
 QUESTIONS (${questionCount}):
 1. Realistic Pakistani classroom scenario for a Grade 1-5 government school teacher
 2. Simple, action-oriented prompt - teacher must DO something, not describe or recall
-3. 2-3 rubric criteria that are specific and observable
+3. 2-3 rubric criteria drawn DIRECTLY from the YES-evidence of the ${indicatorCode} rubric above (specific and observable)
 
 Start JSON array now:`;
+
+    console.log(`[DEBUG] generate-questions: indicator=${indicatorCode} rubricInjected=${!!indicatorRubric} statsInjected=${!!indicatorStats}`);
 
     console.log(`📝 Generating questions for ${trainingCode} with system prompt length: ${systemPrompt?.length || 0}`);
 
@@ -808,7 +951,7 @@ Now evaluate this response against the rubric criteria above. Return ONLY valid 
 });
 
 // AI Student Simulation
-const simulationsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), 'data/simulations.json');
+const simulationsPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'data/simulations.json');
 const simulations = JSON.parse(fs.readFileSync(simulationsPath, 'utf-8'));
 
 app.post('/api/simulate', async (req, res) => {

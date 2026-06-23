@@ -17,6 +17,8 @@ interface TrainingItem {
   indicator: string;
   name: string;
   resources: TrainingResource[];
+  isGap?: boolean;
+  gapNote?: string;
 }
 
 interface GeneratedQuestion {
@@ -50,6 +52,8 @@ export default function PipelinePage() {
       indicator,
       name: data.name,
       resources: data.resources,
+      isGap: data.isGap,
+      gapNote: data.gapNote,
     }));
     setTrainings(trainingsArray);
 
@@ -192,6 +196,8 @@ export default function PipelinePage() {
     ? allResources.filter((r) => r.indicator === selectedIndicator)
     : [];
 
+  const selectedIndicatorData = trainings.find((t) => t.indicator === selectedIndicator);
+
   return (
     <div className="pipeline-page">
       <header className="pipeline-header">
@@ -256,7 +262,14 @@ export default function PipelinePage() {
               </select>
             </div>
 
-            {selectedIndicator && (
+            {selectedIndicator && selectedIndicatorData?.isGap && (
+              <div className="gap-notice">
+                <strong>⚠️ Training Gap</strong>
+                <p>{selectedIndicatorData.gapNote || 'No training videos available for this indicator. Escalate to coach.'}</p>
+              </div>
+            )}
+
+            {selectedIndicator && !selectedIndicatorData?.isGap && (
               <div className="training-selector">
                 <label>2. Select Training Resource:</label>
                 <select
@@ -392,14 +405,64 @@ export default function PipelinePage() {
                           </div>
                         </>
                       )}
-                      <div className="criteria">
-                        <strong>Rubric Criteria:</strong>
-                        <ul>
+                      {state.editingQuestionIdx === idx ? (
+                        <div className="criteria edit-mode">
+                          <strong>Rubric Criteria:</strong>
                           {q.rubricCriteria.map((c, i) => (
-                            <li key={i}>{c}</li>
+                            <div key={i} className="criterion-row">
+                              <textarea
+                                value={c}
+                                onChange={(e) => {
+                                  if (!state.generatedQuestions) return;
+                                  const updated = [...state.generatedQuestions];
+                                  const criteria = [...updated[idx].rubricCriteria];
+                                  criteria[i] = e.target.value;
+                                  updated[idx] = { ...updated[idx], rubricCriteria: criteria };
+                                  updateResourceState(selectedResourceCode, 'generatedQuestions', updated);
+                                }}
+                                rows={2}
+                                className="edit-textarea"
+                              />
+                              <button
+                                className="btn-delete-criterion"
+                                onClick={() => {
+                                  if (!state.generatedQuestions) return;
+                                  const updated = [...state.generatedQuestions];
+                                  const criteria = updated[idx].rubricCriteria.filter((_, j) => j !== i);
+                                  updated[idx] = { ...updated[idx], rubricCriteria: criteria };
+                                  updateResourceState(selectedResourceCode, 'generatedQuestions', updated);
+                                }}
+                                title="Delete this criterion"
+                              >
+                                🗑️
+                              </button>
+                            </div>
                           ))}
-                        </ul>
-                      </div>
+                          <button
+                            className="btn-add-criterion"
+                            onClick={() => {
+                              if (!state.generatedQuestions) return;
+                              const updated = [...state.generatedQuestions];
+                              updated[idx] = {
+                                ...updated[idx],
+                                rubricCriteria: [...updated[idx].rubricCriteria, ''],
+                              };
+                              updateResourceState(selectedResourceCode, 'generatedQuestions', updated);
+                            }}
+                          >
+                            ➕ Add Criterion
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="criteria">
+                          <strong>Rubric Criteria:</strong>
+                          <ul>
+                            {q.rubricCriteria.map((c, i) => (
+                              <li key={i}>{c}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   ))}
 
