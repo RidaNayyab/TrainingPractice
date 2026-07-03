@@ -225,6 +225,10 @@ export const PracticeFlow: React.FC<PracticeFlowProps> = ({
         body: JSON.stringify({
           response: currentResponse,
           questionId: currentQuestion.id,
+          indicatorCode,
+          rubricCriteria: currentQuestion.rubricCriteria,
+          scenario: currentQuestion.scenario,
+          prompt: currentQuestion.prompt,
         }),
       });
 

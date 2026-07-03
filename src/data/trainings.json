@@ -115,6 +115,14 @@
       }
     ]
   },
+  "PIC-2": {
+    "name": "Use of Academic Language",
+    "description": "Teacher uses and models subject-specific terminology",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "isGap": true,
+    "gapNote": "No Academic Language LO exists. Escalate to coach through nudge.",
+    "resources": []
+  },
   "PIC-3": {
     "name": "Understanding Student Misconceptions",
     "description": "Teacher addresses student misunderstandings",
@@ -177,6 +185,91 @@
       }
     ]
   },
+  "PIC-5": {
+    "name": "Effective Feedback",
+    "description": "Teacher gives specific, actionable feedback that helps students improve",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "AF_00_04",
+        "title": "Positive verbal feedback",
+        "domain": "Assessment and Feedback",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/f4cede99-6f99-4785-9a92-682b150e8355.mp4",
+        "rationale": "Most direct match. Provides explicit language templates for specific, actionable feedback. Entry point for both no-feedback and generic-praise failures."
+      },
+      {
+        "code": "AF_01_02_V2",
+        "title": "Formative Assessment",
+        "domain": "Assessment and Feedback",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/812cbeb4-d27a-4b2e-8fd8-3cb9237a19c6.mp4",
+        "rationale": "If feedback remains generic, teacher may lack diagnostic skill — cannot give specific feedback without identifying what is right or wrong."
+      }
+    ]
+  },
+  "PIA-1": {
+    "name": "Prior Knowledge Activation",
+    "description": "Teacher activates and builds on students' existing knowledge",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "AF_00_01_L0",
+        "title": "Assessment tools",
+        "domain": "Assessment and Feedback",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/a7d69bee-d291-42cc-a7cb-bad087bd6234.mp4",
+        "rationale": "Most direct match. Teacher does not elicit prior knowledge at all. Builds the habit of checking before teaching."
+      },
+      {
+        "code": "AF_01_03_V2",
+        "title": "Diagnostic assessments",
+        "domain": "Assessment and Feedback",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/00b235b1-bb72-43a7-9fc5-0b791e3cd9cb.mp4",
+        "rationale": "Teacher needs to plan the prior knowledge bridge in advance — not improvise it."
+      }
+    ]
+  },
+  "PIA-2": {
+    "name": "Meaningful Connections",
+    "description": "Teacher connects content to real life, prior learning, or other contexts",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "CE_00_04_LO",
+        "title": "Word problems",
+        "domain": "Content Expertise",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/78f247c1-91b7-4f98-af2d-70739f859d30.mp4",
+        "rationale": "[Math] Real-life story LO is the right entry — concrete and immediately applicable."
+      },
+      {
+        "code": "BACKPACK_01",
+        "title": "Backpack full of memories (Practicing)",
+        "domain": "Student-Centered Learning Activities",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/89c50cbc-0191-445d-9212-cf04ad04d3b6.mp4",
+        "rationale": "[Literacy] Activity can be conducted as per teachers' choice — invites students to bring personal context into lesson."
+      },
+      {
+        "code": "BACKPACK_02",
+        "title": "Backpack full of Memories (Examples)",
+        "domain": "Student-Centered Learning Activities",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/20061121-f9f7-4129-a182-2b39b8380df7.mp4",
+        "rationale": "[Literacy] Brings excitement and lived-experience hooks into the lesson."
+      },
+      {
+        "code": "PP_02_02",
+        "title": "Inquiry-based learning",
+        "domain": "Pedagogical Practice",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/3708bb74-7e56-4798-b085-64b0b0196edb.mp4",
+        "rationale": "[Science] Inquiry learning makes real-world connection non-optional — every lesson starts from a real-world question by design. Shared: S1 Obs 3."
+      }
+    ]
+  },
   "PIA-3": {
     "name": "Catering to Learning Levels",
     "description": "Teacher differentiates instruction for different student levels",
@@ -224,6 +317,60 @@
     "gapNote": "No LO exists for alternative explanation strategies (analogy, diagram, different example). Escalate to coach through nudge.",
     "resources": []
   },
+  "PIA-5": {
+    "name": "Student Agency & Participation",
+    "description": "Teacher gives students ownership, choice, and active roles in learning",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "PP_01_03_V2",
+        "title": "Student-centered instructional strategies",
+        "domain": "Pedagogical Practice",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/bd92e7ec-3284-40df-a471-eb49e1a3c4d5.mp4",
+        "rationale": "Directly addresses core fear: student ownership = classroom chaos. Demonstrates compatibility with large-class management."
+      },
+      {
+        "code": "PP_01_04_V2",
+        "title": "Peer Learning",
+        "domain": "Pedagogical Practice",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/ddf1f4c6-5c2e-43a5-ac61-bb7bd1dae16b.mp4",
+        "rationale": "Peer teaching gives students genuine ownership of explaining content — structured and low-risk."
+      },
+      {
+        "code": "PP_02_04",
+        "title": "Group Projects",
+        "domain": "Pedagogical Practice",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/d42ac898-3cd0-45d2-85a6-322296ee46c9.mp4",
+        "rationale": "Roles and responsibilities give the teacher a protocol for handing over control — structured enough to feel safe."
+      },
+      {
+        "code": "CM_EXPECTATIONS_PDF",
+        "title": "Expectations and Goals",
+        "domain": "Classroom Management",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/44d6c942-18fc-47a3-9948-067483c45d37.pdf",
+        "rationale": "Co-creating culture gives students formal ownership. Shared: SI5 Obs 5, SI6 Obs 6."
+      }
+    ]
+  },
+  "MA-0": {
+    "name": "Instructional Model Structure (GRR)",
+    "description": "Lesson follows gradual release of responsibility — I do, we do, you do",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "GRR_01",
+        "title": "Gradual Release of Responsibility (GRR)",
+        "domain": "Active Learning Approaches",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/7adb542e-0c2f-481a-896b-13eb9cfa8def.mp4",
+        "rationale": "Combined training on GRR: what it is (graphical representation of implementation, roles of teachers vs students) and how teachers use each phase to make students independent learners."
+      }
+    ]
+  },
   "M1": {
     "name": "Mathematical Discourse & Reasoning",
     "description": "Students justify solutions and explain mathematical thinking",
@@ -252,6 +399,99 @@
         "level": "L2",
         "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/5705ed42-938c-4353-bdec-ee6c1f7f3c9c.mp4",
         "rationale": "Multiple solution approaches IS the core of mathematical discourse."
+      }
+    ]
+  },
+  "M2": {
+    "name": "Problem-Solving & Productive Struggle",
+    "description": "Teacher gives challenging problems and lets students grapple before stepping in",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "PP_01_05_V2",
+        "title": "Open-Ended Questions",
+        "domain": "Pedagogical Practice",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/9f4e5b0d-4037-4f3d-bb4f-619512aaab6e.mp4",
+        "rationale": "No productive-struggle LO. Open-ended questioning introduces value of student thinking time. Shared: PIC-4 Obs 3."
+      },
+      {
+        "code": "TPS_URDU_PDF",
+        "title": "Think-Pair-Share strategies",
+        "domain": "Pedagogical Practice",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/94f1d9f4-c147-4556-9900-f6d36f3767a2.pdf",
+        "rationale": "TPS structures struggle time — students grapple in pairs before sharing. Shared: PIC-4 Obs 4."
+      },
+      {
+        "code": "PP_02_05",
+        "title": "Peer Problem-Solving",
+        "domain": "Pedagogical Practice",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8cd2e511-0460-487b-97f6-69c14f96cb4c.mp4",
+        "rationale": "Small-group problem-solving embeds productive struggle as a designed experience."
+      }
+    ]
+  },
+  "S1": {
+    "name": "Inquiry-Based Approach",
+    "description": "Teacher uses inquiry before explanation in science",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "PP_02_02",
+        "title": "Inquiry-based learning",
+        "domain": "Pedagogical Practice",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/3708bb74-7e56-4798-b085-64b0b0196edb.mp4",
+        "rationale": "No L0/L1 LO exists. L2 only direct match — structurally requires starting with a question. Shared: PIA-2 Obs 5."
+      },
+      {
+        "code": "PP_02_05",
+        "title": "Peer Problem-Solving",
+        "domain": "Pedagogical Practice",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8cd2e511-0460-487b-97f6-69c14f96cb4c.mp4",
+        "rationale": "Safer format — students grapple with scenario together before teacher explains."
+      },
+      {
+        "code": "PP_01_05_V2",
+        "title": "Open-Ended Questions",
+        "domain": "Pedagogical Practice",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/9f4e5b0d-4037-4f3d-bb4f-619512aaab6e.mp4",
+        "rationale": "Stepping back: if L2 inquiry not landing, the prerequisite skill of open questioning may be missing. Shared: PIC-4 Obs 3."
+      }
+    ]
+  },
+  "S2": {
+    "name": "Science Talk & Student Sense-Making",
+    "description": "Students put science ideas in their own words instead of repeating teacher",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "TPS_URDU_PDF",
+        "title": "Think-Pair-Share strategies",
+        "domain": "Pedagogical Practice",
+        "level": "L1",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/94f1d9f4-c147-4556-9900-f6d36f3767a2.pdf",
+        "rationale": "No science-talk LO. TPS is most effective structural break from pure IRE — students discuss in pairs before sharing."
+      },
+      {
+        "code": "PP_02_04",
+        "title": "Group Projects",
+        "domain": "Pedagogical Practice",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/d42ac898-3cd0-45d2-85a6-322296ee46c9.mp4",
+        "rationale": "Student-led discussion removes teacher from centre of talk."
+      },
+      {
+        "code": "PP_02_05",
+        "title": "Peer Problem-Solving",
+        "domain": "Pedagogical Practice",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8cd2e511-0460-487b-97f6-69c14f96cb4c.mp4",
+        "rationale": "Small-group science tasks create structured science talk by necessity."
       }
     ]
   },
@@ -302,34 +542,65 @@
       }
     ]
   },
-  "S1": {
-    "name": "Inquiry-Based Approach",
-    "description": "Teacher uses inquiry before explanation in science",
+  "L2": {
+    "name": "Comprehension Strategy Instruction",
+    "description": "Teacher explicitly names, models, and has students practice a comprehension strategy",
     "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
     "resources": [
       {
-        "code": "PP_02_02",
-        "title": "Inquiry-based learning",
-        "domain": "Pedagogical Practice",
-        "level": "L2",
-        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/3708bb74-7e56-4798-b085-64b0b0196edb.mp4",
-        "rationale": "No L0/L1 LO exists. L2 only direct match — structurally requires starting with a question. Shared: PIA-2 Obs 5."
+        "code": "CE_00_13_V02",
+        "title": "Guided Reading",
+        "domain": "Content Expertise",
+        "level": "L0",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/94e93c80-39d3-4996-bc4a-e8fe55fbd96d.mp4",
+        "rationale": "Entry point. Teacher likely only asks post-reading questions. Builds comprehension as ongoing process — before, during, and after reading."
       },
       {
-        "code": "PP_02_05",
-        "title": "Peer Problem-Solving",
-        "domain": "Pedagogical Practice",
+        "code": "CE_02_07_V2",
+        "title": "Comprehension Strategies",
+        "domain": "Content Expertise",
         "level": "L2",
-        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/8cd2e511-0460-487b-97f6-69c14f96cb4c.mp4",
-        "rationale": "Safer format — students grapple with scenario together before teacher explains."
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/13fedd6f-d06b-4a74-9bc3-f1c29db3a9f4.mp4",
+        "rationale": "Qualitative shift — from asking questions to teaching the thinking process behind them (predicting, inferring, summarizing, visualizing)."
       },
       {
-        "code": "PP_01_05_V2",
-        "title": "Open-Ended Questions",
-        "domain": "Pedagogical Practice",
+        "code": "CE_02_08",
+        "title": "Vocabulary Instructions to Reading and Writing",
+        "domain": "Content Expertise",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/b78563f0-e2fe-4828-af23-4d4f3f1b88b5.mp4",
+        "rationale": "Vocabulary-reading integration using word webs and semantic maps. Shared: L3 Obs 4."
+      }
+    ]
+  },
+  "L3": {
+    "name": "Reading-Writing Connections",
+    "description": "Teacher explicitly connects reading and writing activities",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "resources": [
+      {
+        "code": "CE_01_10_L1",
+        "title": "Multi-Literacy Skills",
+        "domain": "Content Expertise",
         "level": "L1",
-        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/9f4e5b0d-4037-4f3d-bb4f-619512aaab6e.mp4",
-        "rationale": "Stepping back: if L2 inquiry not landing, the prerequisite skill of open questioning may be missing. Shared: PIC-4 Obs 3."
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/e1f40a67-1a44-4990-a448-a6b20b9d53e2.mp4",
+        "rationale": "Most direct match. Builds habit of designing reading and writing as connected sequence."
+      },
+      {
+        "code": "CE_02_08",
+        "title": "Vocabulary Instructions to Reading and Writing",
+        "domain": "Content Expertise",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/b78563f0-e2fe-4828-af23-4d4f3f1b88b5.mp4",
+        "rationale": "Vocabulary as thread connecting reading and writing. Shared: L2 Obs 5."
+      },
+      {
+        "code": "CE_02_09",
+        "title": "Integrating listening texts and oral narratives",
+        "domain": "Content Expertise",
+        "level": "L2",
+        "url": "https://asset-manager-approved.s3.ap-south-1.amazonaws.com/1926b378-dcd3-4903-be0f-4a0536a2abbf.mp4",
+        "rationale": "Listening → discussing → writing is the fullest literacy integration."
       }
     ]
   }

@@ -95,8 +95,11 @@ export const apiService = {
     return response.json();
   },
 
-  async getPracticeQuestions(indicatorCode: string): Promise<PracticeQuestion[]> {
-    const response = await fetch(`${API_BASE_URL}/practice/${indicatorCode}`);
+  async getPracticeQuestions(indicatorCode: string, trainingCode?: string): Promise<PracticeQuestion[]> {
+    const url = trainingCode
+      ? `${API_BASE_URL}/practice/${indicatorCode}?trainingCode=${encodeURIComponent(trainingCode)}`
+      : `${API_BASE_URL}/practice/${indicatorCode}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error('Failed to fetch practice questions');
     return response.json();
   },

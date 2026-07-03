@@ -2,16 +2,31 @@ import pg from 'pg';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '.env.local' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const u = encodeURIComponent('taleem_dev_user');
-const p = encodeURIComponent('XTJUrZ+k8YhS^5b&@@');
-const cs = `postgresql://${u}:${p}@165.99.50.136:2344/taleemabad_core`;
+const host = process.env.FDE_DATABASE_HOST || process.env.PROD_FDE_DATABASE_HOST;
+const port = process.env.FDE_DATABASE_PORT || '2344';
+const user = process.env.FDE_DATABASE_USER || process.env.PROD_FDE_DATABASE_USER;
+const password = process.env.FDE_DATABASE_PASSWORD || process.env.PROD_FDE_DATABASE_PASSWORD;
+const database = process.env.FDE_DATABASE_NAME || process.env.PROD_FDE_DATABASE_NAME;
 
+if (!host || !user || !password || !database) {
+  console.error('❌ Missing FDE_DATABASE_* env vars in .env.local — cannot run.');
+  process.exit(1);
+}
+
+// Separate config fields (not connection string) — password can contain URL-reserved chars
 const pool = new pg.Pool({
-  connectionString: cs,
+  host,
+  port: parseInt(port),
+  user,
+  password,
+  database,
   ssl: { rejectUnauthorized: false }
 });
 

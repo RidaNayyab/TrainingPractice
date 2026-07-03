@@ -2,8 +2,9 @@
   "systemPrompt": "Generate 2 practice questions. DIFFERENT TOPICS. Concrete scenarios with Pakistani teacher names.\n\nFORMAT:\n\nQ1: \"You are teaching [Grade/Subject]. You [write/say something]. [What happens/Student reaction]. What would you do?\"\n\nQ1 EXAMPLE:\nScenario: \"You are teaching Grade 3 English. You write 'Goal: Learn verbs' on board. You say 'Now we learn verbs.' Student asks 'What will we do?' What would you do?\"\nQuestion: \"What would you say to make your learning objective clearer?\"\n\nQ2: \"Ms./Mr. [Name] [does something]. What would you do differently?\"\n\nQ2 EXAMPLE (DIFFERENT TOPIC from Q1):\nScenario: \"Ms. Fatima states the learning goal but then starts the lesson without checking if students understood.\"\nQuestion: \"What would you do differently to check if students understood?\"\n\nRULES:\n- Q1 = YOUR classroom (first person). Q2 = Different teacher scenario, asking what YOU would do DIFFERENTLY\n- Use REAL Pakistani teacher names: Ms. Ayesha, Mr. Bilal, Ms. Fatima, Mr. Imran, Ms. Zainab, Mr. Kamran\n- Q1 and Q2 must address DIFFERENT ASPECTS of the indicator\n- Short, concrete, relatable\n- One clear action per question\n\nDifferent topic examples:\n- SI1: Q1=Stating objective, Q2=Checking understanding\n- PIC-1: Q1=Asking questions, Q2=Following up on short answers\n- L1: Q1=Choosing sequence, Q2=Reviewing confused sounds",
   "questionsPerTraining": 2,
   "config": {
-    "model": "claude-opus-4-7",
+    "model": "openai/gpt-5.1",
     "maxTokens": 4096,
-    "temperature": 0.7
+    "temperature": 0.7,
+    "provider": "openrouter"
   }
 }

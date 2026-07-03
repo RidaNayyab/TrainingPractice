@@ -50,13 +50,17 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
     const loadData = async () => {
       try {
         setLoading(true);
-        const [obs, train, questions] = await Promise.all([
+        // Load observation + training in parallel; training tells us WHICH specific resource was picked for this teacher
+        const [obs, train] = await Promise.all([
           apiService.getObservation(teacherId),
           apiService.getTraining(indicatorCode, teacherId),
-          apiService.getPracticeQuestions(indicatorCode),
         ]);
         setObservation(obs);
         setTraining(train);
+        // Practice questions are scoped to the specific training the matcher picked,
+        // so two teachers with the same indicator but different trainings get different questions
+        const trainingCode = train?.selectedResource?.code;
+        const questions = await apiService.getPracticeQuestions(indicatorCode, trainingCode);
         setPracticeQuestions(questions);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -193,8 +197,18 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
 
       {state === 'practice' && (
         (() => {
+          // Prefer generated practice questions from Railway when available — these are scoped to the
+          // specific training video the matcher picked for this teacher. Fall back to simulation only
+          // when no generated questions exist for this indicator/training combination.
+          const hasGeneratedQuestions = Array.isArray(practiceQuestions) && practiceQuestions.length > 0;
           const hasSimulation = !!(simulationsData as any)[indicatorCode];
-          return hasSimulation ? (
+          return hasGeneratedQuestions ? (
+            <PracticeFlow
+              indicatorCode={indicatorCode}
+              questions={practiceQuestions}
+              onComplete={() => onClose?.()}
+            />
+          ) : hasSimulation ? (
             <SimulationFlow
               indicatorCode={indicatorCode}
               onComplete={() => onClose?.()}

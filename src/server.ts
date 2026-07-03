@@ -36,13 +36,16 @@ const contextualTrainingData = JSON.parse(fs.readFileSync(contextualTrainingData
 const ficoRubricPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..', '.claude', 'context', 'fico_v3_indicator_rubric.md');
 const ficoRubricMap: Record<string, string> = {};
 const ficoDescMap: Record<string, string> = {};
+const ficoNameMap: Record<string, string> = {};
 try {
   const ficoRaw = fs.readFileSync(ficoRubricPath, 'utf-8');
   const headingRegex = /^(#{3,4}) ([A-Z]+-?\d+) — (.+?)$/gm;
-  const matches: Array<{ code: string; start: number; level: number }> = [];
+  const matches: Array<{ code: string; name: string; start: number; level: number }> = [];
   let m: RegExpExecArray | null;
   while ((m = headingRegex.exec(ficoRaw)) !== null) {
-    matches.push({ code: m[2], start: m.index, level: m[1].length });
+    const name = m[3].replace(/\s*\[AI\]\s*$/, '').trim();
+    matches.push({ code: m[2], name, start: m.index, level: m[1].length });
+    ficoNameMap[m[2]] = name;
   }
   for (let i = 0; i < matches.length; i++) {
     const cur = matches[i];
@@ -309,18 +312,51 @@ function getPriorityRank(indicatorCode) {
 }
 
 // Use Claude AI to match feedback to appropriate training resource
+// Extract only the section of a coach's structured feedback that pertains to a specific indicator
+// (e.g. for SI1, grabs only the "**Instructional Clarity**" paragraph from a feedback that lists SI1, SI3, SI2)
+function extractIndicatorFeedbackSection(fullFeedback: string, indicatorCode: string): string {
+  const indicatorName = ficoNameMap[indicatorCode];
+  if (!indicatorName || !fullFeedback) return fullFeedback;
+
+  // Match the heading "**{indicatorName}**" (with optional numbering before) and capture until the next "**Something**" heading or end
+  const escapedName = indicatorName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const sectionRegex = new RegExp(`\\*\\*\\s*${escapedName}\\s*\\*\\*([\\s\\S]*?)(?=\\n\\s*\\d+\\.\\s*\\*\\*[^*]+\\*\\*|\\n\\s*\\*\\*[A-Z][^*]+\\*\\*|$)`, 'i');
+  const m = fullFeedback.match(sectionRegex);
+  return m ? `${indicatorName}: ${m[1].trim()}` : fullFeedback;
+}
+
 async function matchTrainingToFeedback(indicatorCode, feedback, trainingResources) {
   try {
-    const prompt = `Given a teacher's feedback and available training resources, which training resource is most appropriate?
+    if (!feedback || feedback.trim().length < 20) {
+      // No meaningful feedback to analyze — default to entry-level (first) resource
+      return 0;
+    }
 
-Indicator: ${indicatorCode}
+    // Scope feedback to just the section about THIS indicator — otherwise the matcher reads
+    // coach guidance for other indicators (SI3, SI2, etc.) and biases toward the broadest fix.
+    const scopedFeedback = extractIndicatorFeedbackSection(feedback, indicatorCode);
 
-Feedback: ${feedback}
+    const prompt = `You are matching a teacher to the single most appropriate training video for indicator ${indicatorCode}${ficoNameMap[indicatorCode] ? ` (${ficoNameMap[indicatorCode]})` : ''}.
 
-Available Training Resources:
-${trainingResources.map((r, i) => `${i + 1}. ${r.title} (${r.domain}) - Level ${r.level}\n   Rationale: ${r.rationale}`).join('\n')}
+Each training has a RATIONALE that names the *specific failure pattern* it addresses. Your job is to read the coach's actual feedback to this teacher and pick the training whose rationale matches the failure pattern the coach is describing — NOT the broadest/safest option, NOT the lowest-level option by default.
 
-Respond with ONLY the number (1, 2, or 3) of the most appropriate resource.`;
+COACH FEEDBACK FOR THIS TEACHER (the section specifically about ${ficoNameMap[indicatorCode] || indicatorCode}):
+"""
+${scopedFeedback}
+"""
+
+CANDIDATE TRAININGS (each addresses a different failure pattern):
+${trainingResources.map((r, i) => `${i + 1}. ${r.title} [${r.code}, ${r.level}]\n   Addresses: ${r.rationale}`).join('\n\n')}
+
+DECISION FRAMEWORK:
+- Identify what the coach is actually prescribing as the fix (look at any "self-check", "try", "next time" language)
+- Map that prescription to the training whose rationale describes the SAME failure pattern
+- If the coach is teaching the teacher to STATE a learning goal that was missing → pick the goal-setting / lesson-planning training
+- If the coach is teaching the teacher to VERIFY student comprehension of an existing instruction (e.g. "ask one child to repeat it") → pick the comprehension-checks training
+- If the coach is signalling that previous tips have not worked and depth/cognitive complexity is the issue (e.g. "tips that are not landing", "try a different approach" after multiple cycles) → pick the higher-level (L1+) training
+- Do NOT default to resource #1. If the feedback evidence does not match #1's rationale, pick the better-fitting one.
+
+Respond with ONLY a single digit: the number of the best-matched training.`;
 
     const response = await client.messages.create({
       model: 'claude-opus-4-7',
@@ -328,11 +364,17 @@ Respond with ONLY the number (1, 2, or 3) of the most appropriate resource.`;
       messages: [{ role: 'user', content: prompt }]
     });
 
-    const match = response.content[0].type === 'text' ? parseInt(response.content[0].text.trim()) : 1;
+    const text = response.content[0].type === 'text' ? response.content[0].text.trim() : '1';
+    const match = parseInt(text);
+    if (isNaN(match)) {
+      console.warn(`[WARN] matchTrainingToFeedback got non-numeric response: "${text}" — defaulting to 0`);
+      return 0;
+    }
+    console.log(`[DEBUG] matchTrainingToFeedback(${indicatorCode}) → picked resource #${match} of ${trainingResources.length}`);
     return Math.max(1, Math.min(match, trainingResources.length)) - 1;
   } catch (err) {
     console.error('AI matching error:', err);
-    return 0; // Default to first resource
+    return 0;
   }
 }
 
@@ -483,6 +525,10 @@ app.get('/api/training/:code', (req, res) => {
 
 app.get('/api/practice/:code', async (req, res) => {
   const code = req.params.code;
+  // Optional ?trainingCode=PP_00_01 narrows results to only the questions tied to that specific training
+  // (so two teachers with the same flagged indicator but different recommended trainings get different questions)
+  const trainingCode = typeof req.query.trainingCode === 'string' ? req.query.trainingCode : undefined;
+
   const dbConn = new Client({
     host: process.env.PGHOST,
     port: parseInt(process.env.PGPORT || '5432'),
@@ -494,12 +540,23 @@ app.get('/api/practice/:code', async (req, res) => {
   try {
     await dbConn.connect();
 
-    // Query for generated questions first
-    const result = await dbConn.query(
-      `SELECT question_id, scenario, prompt, rubric_criteria FROM generated_practice_questions
-       WHERE $1 = ANY(indicator_codes) ORDER BY question_id`,
-      [code]
-    );
+    let result;
+    if (trainingCode) {
+      // Training-scoped lookup: only questions explicitly generated for this training video
+      result = await dbConn.query(
+        `SELECT question_id, scenario, prompt, rubric_criteria, training_code, training_title FROM generated_practice_questions
+         WHERE training_code = $1 AND indicator_code = $2 ORDER BY question_id`,
+        [trainingCode, code]
+      );
+      console.log(`[DEBUG] /api/practice/${code}?trainingCode=${trainingCode} → ${result.rows.length} questions`);
+    } else {
+      // Backwards-compat: indicator-only lookup returns the full pool
+      result = await dbConn.query(
+        `SELECT question_id, scenario, prompt, rubric_criteria, training_code, training_title FROM generated_practice_questions
+         WHERE indicator_code = $1 ORDER BY question_id`,
+        [code]
+      );
+    }
 
     await dbConn.end();
 
@@ -507,6 +564,8 @@ app.get('/api/practice/:code', async (req, res) => {
       const questions = result.rows.map((row: any) => ({
         id: row.question_id,
         indicatorCode: code,
+        trainingCode: row.training_code,
+        trainingTitle: row.training_title,
         scenario: row.scenario,
         prompt: row.prompt,
         rubricCriteria: row.rubric_criteria,
@@ -585,54 +644,104 @@ app.post('/api/generate-questions', async (req, res) => {
       ? `\n\nREAL OBSERVATION DATA (NIETE FDE, ${indicatorStats.total} scored observations on ${indicatorCode}): ${indicatorStats.failureRate}% of teachers miss this indicator (${indicatorStats.noCount} NO, ${indicatorStats.partialCount} PARTIAL, ${indicatorStats.yesCount} YES). Ground scenarios in the failure patterns teachers actually exhibit.\n`
       : '';
 
-    const userMessage = `TASK: Generate exactly ${questionCount} practice questions that let a Pakistani government-school teacher PRACTICE the ${indicatorCode || trainingCode} indicator until mastery.
+    const userMessage = `TASK: Generate exactly ${questionCount} short, tight practice questions. Each one lets a Pakistani government-school teacher PRACTICE — not recall — the transferable skill from the "${trainingCode}" training, judged against the ${indicatorCode || trainingCode} rubric.
 ${rubricBlock}${statsBlock}
 INPUT:
 Code: ${trainingCode}
 Indicator: ${indicatorCode}
-Outcome: ${learningOutcome}
+Outcome the teacher just learned: ${learningOutcome}
 Context: ${context || 'N/A'}
 
 OUTPUT: Valid JSON array ONLY. No markdown, no explanations.
 
-CRITICAL - JSON FORMAT:
-- Each string must be on ONE LINE (replace newlines with spaces)
-- All quotes inside strings must be ESCAPED with backslash: \\"
-- All backslashes must be escaped: \\\\
-- No line breaks except after commas between objects
+JSON FORMAT rules:
+- Each string on ONE LINE (replace newlines with spaces)
+- Escape internal quotes: \\"
+- Escape backslashes: \\\\
 
-EXAMPLE:
-[{"scenario":"Grade 2 classroom...","prompt":"Write what...","rubricCriteria":["criterion 1","criterion 2"]},{"scenario":"Another class...","prompt":"How would...","rubricCriteria":["item 1","item 2"]}]
+LENGTH LIMITS:
+- scenario: 1-2 sentences, MAX 35 words. Sets the classroom moment concretely. No filler.
+- prompt:   1 sentence, MAX 25 words. Asks ONE specific move — often "What would you SAY and DO to…"
+- rubricCriteria: 2-3 items, each MAX 20 words. OBSERVABLE and CONCRETE (see below).
 
-QUESTIONS (${questionCount}):
-1. Realistic Pakistani classroom scenario for a Grade 1-5 government school teacher
-2. Simple, action-oriented prompt - teacher must DO something, not describe or recall
-3. 2-3 rubric criteria drawn DIRECTLY from the YES-evidence of the ${indicatorCode} rubric above (specific and observable)
+TWO QUESTIONS = TWO DIFFERENT FACETS OF THE SAME SKILL (this is critical):
+- Do NOT write two variations of the same request. Q1 and Q2 must probe DIFFERENT aspects/layers of the ${indicatorCode} skill.
+- Q1: the FIRST-ORDER practice of the skill — the direct mechanical move (e.g. for phonics: modeling one letter's sound variations, students hearing the difference).
+- Q2: a DEEPER or ADJACENT facet — the same skill applied to a subtler situation the training also unlocks (e.g. for phonics: recognizing that the same mark also changes MEANING, not just sound; disagreement among students becomes a teaching moment).
+- If Q1 and Q2 could be answered with the same rubric criteria, you have failed. Rewrite.
 
-Start JSON array now:`;
+RUBRIC CRITERIA MUST BE OBSERVABLE — write what a coach would literally see or hear:
+- ❌ "Teacher clearly models the sound" (abstract)
+- ✅ "Teacher says each sound aloud with the correct Harakaat in sequence"
+- ❌ "Students practice"
+- ✅ "Students repeat each sound after the teacher before moving to the next Harakaat"
+- ❌ "Covers pronunciation and positions"
+- ✅ "Physical marking on the board matches what is said aloud — Zabar above, Zer below, Pesh above"
+Prefer physical, spatial, sequential, or verbatim-speech criteria over abstract descriptors.
+
+WORKED EXAMPLE — two questions on the same L1 phonics skill, probing DIFFERENT facets:
+[
+  {"scenario":"You write \\"ب\\" on the board with no Harakaat. Students need to hear how Zabar, Zer, and Pesh each change its pronunciation before reading any word.","prompt":"What would you say and do to model all three Harakaat on this one letter so students hear the difference clearly?","rubricCriteria":["Teacher says each sound aloud with the correct Harakaat in sequence","Students repeat each sound after the teacher before moving to the next Harakaat","Physical marking on the board matches what is said aloud — Zabar above, Zer below, Pesh above"]},
+  {"scenario":"Mr Kamran gives the class the word \\"بن\\" without Harakaat and asks them to add the correct mark. Half add Zabar, half add Zer.","prompt":"What would you say to help both groups see that neither is wrong — the Harakaat changes the meaning, not just the sound?","rubricCriteria":["Teacher uses both readings in a sentence to show the meaning difference","Students hear both sentences aloud before deciding which Harakaat fits the context","Explanation connects Harakaat choice to meaning, not just correct vs. incorrect pronunciation"]}
+]
+
+Notice: Q1 is about SOUND differentiation (mark position → sound). Q2 is about MEANING differentiation (mark choice → different word). Different facets, same L1 skill. Rubric criteria are physical/spatial/observable, not abstract.
+
+Now generate ${questionCount} questions like this — tight, distinct facets, observable rubric. Start JSON array:`;
 
     console.log(`[DEBUG] generate-questions: indicator=${indicatorCode} rubricInjected=${!!indicatorRubric} statsInjected=${!!indicatorStats}`);
 
-    console.log(`📝 Generating questions for ${trainingCode} with system prompt length: ${systemPrompt?.length || 0}`);
+    const model = questionGenConfig.config.model || 'openai/gpt-5.1';
+    const provider = questionGenConfig.config.provider || 'openrouter';
+    console.log(`📝 Generating questions for ${trainingCode} via ${provider}:${model} (system prompt length: ${systemPrompt?.length || 0})`);
 
-    const messageParams: any = {
-      model: questionGenConfig.config.model || 'claude-opus-4-7',
-      max_tokens: questionGenConfig.config.maxTokens || 4096,
-      system: systemPrompt || questionGenConfig.systemPrompt,
-      messages: [{ role: 'user', content: userMessage }],
-    };
+    let responseText: string;
 
-    // Temperature is deprecated for claude-opus-4-7, only add for other models
-    const model = messageParams.model;
-    if (!model.includes('opus-4-7') && !model.includes('opus-4')) {
-      messageParams.temperature = questionGenConfig.config.temperature || 0.7;
+    if (provider === 'openrouter') {
+      if (!process.env.OPENROUTER_API_KEY) {
+        return res.status(500).json({ error: 'OPENROUTER_API_KEY not set in .env.local' });
+      }
+      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: questionGenConfig.config.maxTokens || 4096,
+          temperature: questionGenConfig.config.temperature ?? 0.7,
+          messages: [
+            { role: 'system', content: systemPrompt || questionGenConfig.systemPrompt },
+            { role: 'user', content: userMessage },
+          ],
+        }),
+      });
+      if (!r.ok) {
+        const errText = await r.text();
+        console.error(`[ERROR] OpenRouter ${r.status}: ${errText.slice(0, 400)}`);
+        return res.status(502).json({ error: `OpenRouter ${r.status}: ${errText.slice(0, 300)}` });
+      }
+      const data = await r.json();
+      responseText = data.choices?.[0]?.message?.content ?? '';
+      console.log(`📥 OpenRouter response length: ${responseText.length} (model: ${data.model || model})`);
+    } else {
+      // Legacy Anthropic path — kept for fallback if provider is changed back
+      const messageParams: any = {
+        model,
+        max_tokens: questionGenConfig.config.maxTokens || 4096,
+        system: systemPrompt || questionGenConfig.systemPrompt,
+        messages: [{ role: 'user', content: userMessage }],
+      };
+      if (!model.includes('opus-4-7') && !model.includes('opus-4')) {
+        messageParams.temperature = questionGenConfig.config.temperature || 0.7;
+      }
+      const message = await client.messages.create(messageParams);
+      responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+      console.log(`📥 Claude response length: ${responseText.length}`);
     }
 
-    const message = await client.messages.create(messageParams);
-
-    const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
-    console.log(`📥 Claude response length: ${responseText.length}`);
-    console.log(`📝 Claude raw response:\n${responseText}`);
+    console.log(`📝 Raw model response:\n${responseText}`);
     let questions;
 
     try {
@@ -803,19 +912,18 @@ app.post('/api/save-questions', async (req, res) => {
     await dbConn.connect();
     console.log(`[SAVE] Connected successfully`);
 
-    // Create table if it doesn't exist (with backward compatibility)
+    // Create table if it doesn't exist
     await dbConn.query(`
       CREATE TABLE IF NOT EXISTS generated_practice_questions (
         id SERIAL PRIMARY KEY,
         training_code VARCHAR(50) NOT NULL,
-        indicator_codes TEXT[] NOT NULL,
         question_id VARCHAR(100) UNIQUE NOT NULL,
         scenario TEXT NOT NULL,
         prompt TEXT NOT NULL,
         rubric_criteria TEXT[] NOT NULL,
         created_at TIMESTAMP DEFAULT NOW(),
         training_title VARCHAR(255),
-        indicator_code VARCHAR(50),
+        indicator_code VARCHAR(50) NOT NULL,
         indicator_rubric JSONB,
         question_context JSONB
       );
@@ -829,19 +937,36 @@ app.post('/api/save-questions', async (req, res) => {
     // Save each question
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
-      const questionId = `${trainingCode}-q${i + 1}`;
+      // Include indicatorCode in the ID so trainings shared across indicators (e.g., PP_02_05 is
+      // mapped under M2, S1, AND S2) don't collide on question_id UNIQUE and silently overwrite
+      // each other via ON CONFLICT. Format: {indicatorCode}-{trainingCode}-q{n}
+      const questionId = `${indicatorCode}-${trainingCode}-q${i + 1}`;
 
-      console.log(`[SAVE] Inserting question ${i + 1}/${questions.length}: ${questionId}`);
+      // Belt-and-suspenders: refuse to overwrite a row whose indicator_code differs from what we're saving.
+      // This can only happen if question_id collides with another (indicator, training) pair — which shouldn't
+      // occur under the current ID format, but the check prevents silent data loss if it ever does.
+      const existing = await dbConn.query(
+        `SELECT indicator_code FROM generated_practice_questions WHERE question_id = $1`,
+        [questionId]
+      );
+      if (existing.rows.length > 0 && existing.rows[0].indicator_code !== indicatorCode) {
+        console.warn(`[SAVE] SKIPPED: question_id "${questionId}" already exists under indicator ${existing.rows[0].indicator_code}, refusing to overwrite with ${indicatorCode}.`);
+        continue;
+      }
 
+      const isUpdate = existing.rows.length > 0;
+      console.log(`[SAVE] ${isUpdate ? 'UPDATE' : 'INSERT'} question ${i + 1}/${questions.length}: ${questionId}`);
+
+      // ON CONFLICT DO UPDATE only fires for the same (indicator, training) pair — a deliberate regenerate.
+      // Different (indicator, training) pairs get different question_ids and always INSERT as new rows.
       const insertResult = await dbConn.query(
         `INSERT INTO generated_practice_questions
-         (training_code, indicator_codes, question_id, scenario, prompt, rubric_criteria, training_title, indicator_code, indicator_rubric, question_context)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         (training_code, question_id, scenario, prompt, rubric_criteria, training_title, indicator_code, indicator_rubric, question_context)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (question_id) DO UPDATE SET
-         scenario = $4, prompt = $5, rubric_criteria = $6, training_title = $7, indicator_code = $8, indicator_rubric = $9, question_context = $10`,
+         scenario = $3, prompt = $4, rubric_criteria = $5, training_title = $6, indicator_code = $7, indicator_rubric = $8, question_context = $9`,
         [
           trainingCode,
-          [indicatorCode],
           questionId,
           q.scenario,
           q.prompt,
@@ -856,7 +981,7 @@ app.post('/api/save-questions', async (req, res) => {
           }),
         ]
       );
-      console.log(`[SAVE] Insert successful for ${questionId}, rows affected: ${insertResult.rowCount}`);
+      console.log(`[SAVE] ${isUpdate ? 'Updated' : 'Inserted'} ${questionId} (rows affected: ${insertResult.rowCount})`);
     }
 
     console.log(`✅ Saved ${questions.length} questions for ${trainingCode}`);
@@ -876,26 +1001,38 @@ app.post('/api/save-questions', async (req, res) => {
 // Evaluate practice response using Claude AI with proper rubric
 app.post('/api/evaluate', async (req, res) => {
   try {
-    const { response, questionId } = req.body;
+    const { response, questionId, indicatorCode: bodyIndicatorCode, rubricCriteria, scenario, prompt: questionPrompt } = req.body;
 
     if (!response || !questionId) {
       return res.status(400).json({ error: 'Missing response or questionId' });
     }
 
-    // Extract indicator code from questionId (e.g., "SI1-q1" → "SI1")
-    const indicatorCode = questionId.split('-')[0];
-    const indicatorRubric = evaluationRubric.indicators[indicatorCode];
+    // Prefer explicit indicatorCode from body. Fall back to parsing the questionId leading token:
+    //  - New format: "S1-PP_02_05-q1" → "S1"
+    //  - Old legacy: "SI1-q1"          → "SI1"
+    // Training-only IDs ("PP_00_01-q1") are ambiguous — those must send indicatorCode in body.
+    let indicatorCode = bodyIndicatorCode;
+    if (!indicatorCode) {
+      const m = questionId.match(/^([A-Z]+-?\d+)-/);
+      indicatorCode = m ? m[1] : null;
+    }
 
+    if (!indicatorCode) {
+      return res.status(400).json({ error: `Could not determine indicator from request (questionId="${questionId}", no indicatorCode in body)` });
+    }
+
+    const indicatorRubric = evaluationRubric.indicators[indicatorCode];
     if (!indicatorRubric) {
       return res.status(400).json({ error: `No rubric found for indicator ${indicatorCode}` });
     }
 
-    // Build the evaluation prompt with actual rubric criteria
-    const rubricText = `
-INDICATOR: ${indicatorRubric.name}
+    // Build the evaluation prompt: full FICO rubric for the indicator + the question-specific criteria
+    // that this scenario was generated to test. The teacher's response is judged against BOTH.
+    const indicatorRubricText = `
+FICO INDICATOR: ${indicatorRubric.name} (${indicatorCode})
 DESCRIPTION: ${indicatorRubric.description}
 
-RUBRIC CRITERIA:
+INDICATOR-LEVEL RUBRIC:
 YES criteria:
 ${indicatorRubric.criteria.YES.map((c: string) => `  - ${c}`).join('\n')}
 
@@ -906,14 +1043,46 @@ NO criteria:
 ${indicatorRubric.criteria.NO.map((c: string) => `  - ${c}`).join('\n')}
 `;
 
-    const evaluationPrompt = `${evaluationRubric.systemPrompt}
+    const questionRubricText = Array.isArray(rubricCriteria) && rubricCriteria.length > 0
+      ? `\nQUESTION-SPECIFIC RUBRIC (what THIS scenario is testing the teacher on):\n${rubricCriteria.map((c: string) => `  - ${c}`).join('\n')}\n`
+      : '';
 
-${rubricText}
+    const scenarioBlock = scenario || questionPrompt
+      ? `\nSCENARIO PRESENTED TO TEACHER:\n${scenario ? scenario + '\n' : ''}${questionPrompt ? 'Question: ' + questionPrompt + '\n' : ''}`
+      : '';
 
+    const evaluationPrompt = `You are an instructional coach scoring a Pakistani government-school teacher's practice response against the FICO V3 rubric.
+${indicatorRubricText}
+${questionRubricText}${scenarioBlock}
 TEACHER'S RESPONSE:
 "${response}"
 
-Now evaluate this response against the rubric criteria above. Return ONLY valid JSON with no other text.`;
+Evaluate the response against BOTH the indicator-level rubric AND the question-specific criteria.
+
+Return ONLY a JSON object with this EXACT shape (no markdown, no commentary):
+{
+  "score": "YES" | "PARTIAL" | "NO",
+  "feedback": "2-3 sentence coaching nudge — see instructions below",
+  "rubric_criteria_met": ["<verbatim question-specific criterion the response satisfied>", ...],
+  "rubric_criteria_missed": ["<verbatim question-specific criterion the response did NOT satisfy>", ...],
+  "rubric_criteria_not_applicable": ["<criterion that could not be judged from this response>", ...]
+}
+
+SCORING RULES:
+- "score" reflects the indicator-level rubric (YES/PARTIAL/NO) — if all question-specific criteria are met cleanly, score YES; if some are met, PARTIAL; if none, NO.
+- Each item in rubric_criteria_met / rubric_criteria_missed / rubric_criteria_not_applicable must be the VERBATIM text of one of the question-specific rubric items listed above. Every question-specific criterion must appear in exactly one of these three arrays.
+
+FEEDBACK RULES (the "feedback" string — short coaching nudge, peer-to-peer):
+- Maximum 2 sentences. Aim for ~25 words total. Simple, direct English a teacher reads in 5 seconds.
+- Pedagogy vocabulary IS welcome — teachers use it daily. OK to say "observable verb," "action verb," "learning objective," "measurable," "check for understanding," "model," "guided practice," "prior knowledge," "scaffold." These are tools of the trade, not jargon.
+- BANNED phrasings (too textbook-y / corporate / abstract): "success threshold," "demonstrate mastery," "measurable criterion" (say "measurable" instead), "demonstrates competency," "benchmark," "rubric expectations," "learning outcome attainment," "evidence of learning."
+- Sentence 1: A concrete redirect with a tiny example — e.g. "Try using an observable verb like 'identify' or 'name' — for example 'name 4 parts of a plant.'"
+- Sentence 2 (optional): A forward-looking nudge for the NEXT LESSON or NEXT TIME. The teacher cannot retry this question — NEVER invite re-attempt, NEVER ask "want to try again?" / "give it another go?". Use phrases like "In your next lesson…", "Next time you write a goal…", "Going forward…", "When you plan tomorrow's lesson…".
+- Tone: warm peer coach. NOT lecturing, NOT scolding, NOT explaining the mistake at length.
+- BANNED: "You missed X", "Your answer is wrong/vague/incomplete," "Want to give it another go?", "Try again," restating the full rubric verbatim, semicolons, more than one worked example.
+- If the response was strong: name what worked in 5-10 words using legitimate pedagogy terms ("strong action verb," "clear objective," "good use of measurable language"), then give one forward-looking refinement for the next lesson. Still ≤2 sentences total.
+
+Return ONLY the JSON object — no preamble, no fence, no trailing text.`;
 
     const response_obj = await client.messages.create({
       model: 'claude-opus-4-7',
