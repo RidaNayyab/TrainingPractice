@@ -213,6 +213,30 @@ async function initialize() {
     console.log(`✅ Loaded ${observationsCache.length} observations (Railway)`);
     console.log(`✅ Loaded tier data for ${tierCache.size} teachers`);
 
+    // Ensure the teacher-response persistence table exists.
+    // Every scenario submission (with evaluation) and every completed roleplay session (with evaluation)
+    // gets one row here. Nothing gets dumped again.
+    await dbClient.query(`
+      CREATE TABLE IF NOT EXISTS teacher_practice_attempts (
+        id SERIAL PRIMARY KEY,
+        teacher_id VARCHAR(50) NOT NULL,
+        indicator_code VARCHAR(50) NOT NULL,
+        training_code VARCHAR(50),
+        mode VARCHAR(20) NOT NULL,
+        question_id VARCHAR(100),
+        scenario TEXT,
+        prompt TEXT,
+        rubric_criteria TEXT[],
+        response TEXT,
+        conversation_history JSONB,
+        evaluation JSONB NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    await dbClient.query(`CREATE INDEX IF NOT EXISTS idx_tpa_teacher ON teacher_practice_attempts (teacher_id)`);
+    await dbClient.query(`CREATE INDEX IF NOT EXISTS idx_tpa_ind_train ON teacher_practice_attempts (indicator_code, training_code)`);
+    console.log(`✅ teacher_practice_attempts table ready`);
+
     await dbClient.end();
     console.log('📴 Railway DB closed');
 
@@ -221,6 +245,59 @@ async function initialize() {
   } catch (err) {
     console.error('❌ Error:', err);
     process.exit(1);
+  }
+}
+
+// Persist a teacher practice attempt (scenario or roleplay) with its coaching feedback.
+// Uses a short-lived Client rather than a pool; fire-and-log-only-on-error so a persistence
+// failure never blocks the coaching feedback from reaching the teacher.
+async function persistPracticeAttempt(row: {
+  teacherId: string;
+  indicatorCode: string;
+  trainingCode?: string;
+  mode: 'scenario' | 'roleplay';
+  questionId?: string;
+  scenario?: string;
+  prompt?: string;
+  rubricCriteria?: string[];
+  response?: string;
+  conversationHistory?: any[];
+  evaluation: any;
+}): Promise<void> {
+  const conn = new Client({
+    host: process.env.PGHOST,
+    port: parseInt(process.env.PGPORT || '5432'),
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    database: process.env.PGDATABASE,
+  });
+  try {
+    await conn.connect();
+    const r = await conn.query(
+      `INSERT INTO teacher_practice_attempts
+        (teacher_id, indicator_code, training_code, mode, question_id, scenario, prompt,
+         rubric_criteria, response, conversation_history, evaluation)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       RETURNING id`,
+      [
+        row.teacherId,
+        row.indicatorCode,
+        row.trainingCode || null,
+        row.mode,
+        row.questionId || null,
+        row.scenario || null,
+        row.prompt || null,
+        row.rubricCriteria || null,
+        row.response || null,
+        row.conversationHistory ? JSON.stringify(row.conversationHistory) : null,
+        JSON.stringify(row.evaluation),
+      ]
+    );
+    console.log(`[SAVE-ATTEMPT] id=${r.rows[0].id} teacher=${row.teacherId} ${row.mode}/${row.indicatorCode}/${row.trainingCode || '-'}`);
+  } catch (err) {
+    console.error('[ERROR] persistPracticeAttempt failed:', err instanceof Error ? err.message : err);
+  } finally {
+    try { await conn.end(); } catch {}
   }
 }
 
@@ -1001,7 +1078,12 @@ app.post('/api/save-questions', async (req, res) => {
 // Evaluate practice response using Claude AI with proper rubric
 app.post('/api/evaluate', async (req, res) => {
   try {
-    const { response, questionId, indicatorCode: bodyIndicatorCode, rubricCriteria, scenario, prompt: questionPrompt } = req.body;
+    const {
+      response, questionId,
+      indicatorCode: bodyIndicatorCode,
+      rubricCriteria, scenario, prompt: questionPrompt,
+      teacherId, trainingCode,   // new — required for persistence
+    } = req.body;
 
     if (!response || !questionId) {
       return res.status(400).json({ error: 'Missing response or questionId' });
@@ -1112,6 +1194,27 @@ Return ONLY the JSON object — no preamble, no fence, no trailing text.`;
     };
 
     console.log('✅ Evaluation parsed:', evaluation);
+
+    // Persist the attempt + evaluation. Runs async but we don't block the response — teacher sees
+    // feedback immediately, save happens in the background. If teacherId is missing we still return
+    // feedback but log a warning (some legacy callers didn't send it yet).
+    if (teacherId) {
+      persistPracticeAttempt({
+        teacherId,
+        indicatorCode,
+        trainingCode,
+        mode: 'scenario',
+        questionId,
+        scenario,
+        prompt: questionPrompt,
+        rubricCriteria,
+        response,
+        evaluation,
+      });
+    } else {
+      console.warn(`[WARN] /api/evaluate got no teacherId — attempt NOT persisted (indicator=${indicatorCode}, question=${questionId})`);
+    }
+
     res.json(evaluation);
   } catch (err) {
     console.error('Evaluation error:', err);
@@ -1125,7 +1228,7 @@ const simulations = JSON.parse(fs.readFileSync(simulationsPath, 'utf-8'));
 
 app.post('/api/simulate', async (req, res) => {
   try {
-    const { indicatorCode, conversationHistory, turnNumber, maxTurns } = req.body;
+    const { indicatorCode, conversationHistory, turnNumber, maxTurns, teacherId, trainingCode } = req.body;
 
     if (!indicatorCode || !conversationHistory || !Array.isArray(conversationHistory)) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -1212,15 +1315,36 @@ Provide feedback in JSON format:
         };
       }
 
+      const finalEval = {
+        score: evaluation.score || 'PARTIAL',
+        feedback: evaluation.feedback || 'Good effort!',
+        rubric_criteria_met: evaluation.rubric_criteria_met || [],
+        rubric_criteria_missed: evaluation.rubric_criteria_missed || [],
+      };
+
+      // Persist the completed roleplay session with its evaluation.
+      // Includes the final student message so the conversation snapshot is complete.
+      const fullHistory = [...conversationHistory, { role: 'student', message: studentMessage }];
+      if (teacherId) {
+        persistPracticeAttempt({
+          teacherId,
+          indicatorCode,
+          trainingCode,
+          mode: 'roleplay',
+          scenario: simulation.setup,
+          prompt: simulation.indicatorFocus,
+          rubricCriteria: simulation.rubricCriteria,
+          conversationHistory: fullHistory,
+          evaluation: finalEval,
+        });
+      } else {
+        console.warn(`[WARN] /api/simulate final turn got no teacherId — roleplay session NOT persisted (indicator=${indicatorCode})`);
+      }
+
       res.json({
         studentMessage,
         isComplete: true,
-        evaluation: {
-          score: evaluation.score || 'PARTIAL',
-          feedback: evaluation.feedback || 'Good effort!',
-          rubric_criteria_met: evaluation.rubric_criteria_met || [],
-          rubric_criteria_missed: evaluation.rubric_criteria_missed || [],
-        },
+        evaluation: finalEval,
       });
     } else {
       res.json({

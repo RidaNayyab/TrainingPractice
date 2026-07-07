@@ -30,6 +30,7 @@ interface FeedbackTrainingModuleProps {
 }
 
 type ModuleState = 'feedback' | 'training' | 'practice' | 'completion';
+type PracticeMode = null | 'scenario' | 'roleplay';
 
 export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
   teacherId,
@@ -37,6 +38,7 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
   onClose,
 }) => {
   const [state, setState] = useState<ModuleState>('feedback');
+  const [practiceMode, setPracticeMode] = useState<PracticeMode>(null);
   const [loading, setLoading] = useState(true);
   const [observation, setObservation] = useState<Observation | null>(null);
   const [training, setTraining] = useState<any>(null);
@@ -195,32 +197,59 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
         />
       )}
 
-      {state === 'practice' && (
-        (() => {
-          // Prefer generated practice questions from Railway when available — these are scoped to the
-          // specific training video the matcher picked for this teacher. Fall back to simulation only
-          // when no generated questions exist for this indicator/training combination.
-          const hasGeneratedQuestions = Array.isArray(practiceQuestions) && practiceQuestions.length > 0;
-          const hasSimulation = !!(simulationsData as any)[indicatorCode];
-          return hasGeneratedQuestions ? (
-            <PracticeFlow
-              indicatorCode={indicatorCode}
-              questions={practiceQuestions}
-              onComplete={() => onClose?.()}
-            />
-          ) : hasSimulation ? (
-            <SimulationFlow
-              indicatorCode={indicatorCode}
-              onComplete={() => onClose?.()}
-            />
-          ) : (
-            <PracticeFlow
-              indicatorCode={indicatorCode}
-              questions={practiceQuestions}
-              onComplete={() => onClose?.()}
-            />
-          );
-        })()
+      {state === 'practice' && practiceMode === null && (() => {
+        const hasGeneratedQuestions = Array.isArray(practiceQuestions) && practiceQuestions.length > 0;
+        const hasSimulation = !!(simulationsData as any)[indicatorCode];
+        return (
+          <div className={styles.practiceChoice}>
+            <div className={styles.header}>
+              <h2>Choose your practice mode</h2>
+              <p className={styles.subtitle}>Both practice the same skill from your training — pick the format that fits you today.</p>
+            </div>
+            <div className={styles.choiceGrid}>
+              <button
+                className={styles.choiceCard}
+                onClick={() => setPracticeMode('scenario')}
+                disabled={!hasGeneratedQuestions}
+              >
+                <div className={styles.choiceIcon}>📝</div>
+                <h3>Scenario Questions</h3>
+                <p>Two short classroom scenarios. Read, write your response, get a coaching nudge. One after the other.</p>
+                <span className={styles.choiceMeta}>{hasGeneratedQuestions ? `${practiceQuestions.length} questions ready` : 'No questions available'}</span>
+              </button>
+
+              <button
+                className={styles.choiceCard}
+                onClick={() => setPracticeMode('roleplay')}
+                disabled={!hasSimulation}
+              >
+                <div className={styles.choiceIcon}>🎭</div>
+                <h3>Roleplay</h3>
+                <p>An AI student talks to you. You reply as the teacher. Up to 3 turns of dynamic back-and-forth shaped by your responses.</p>
+                <span className={styles.choiceMeta}>{hasSimulation ? 'Simulation ready' : 'Not available for this indicator yet'}</span>
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {state === 'practice' && practiceMode === 'scenario' && (
+        <PracticeFlow
+          indicatorCode={indicatorCode}
+          questions={practiceQuestions}
+          teacherId={teacherId}
+          trainingCode={training?.selectedResource?.code}
+          onComplete={() => onClose?.()}
+        />
+      )}
+
+      {state === 'practice' && practiceMode === 'roleplay' && (
+        <SimulationFlow
+          indicatorCode={indicatorCode}
+          teacherId={teacherId}
+          trainingCode={training?.selectedResource?.code}
+          onComplete={() => onClose?.()}
+        />
       )}
 
       {state === 'completion' && (

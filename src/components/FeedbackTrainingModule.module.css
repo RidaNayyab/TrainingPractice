@@ -213,3 +213,68 @@
     flex: 1;
   }
 }
+
+/* Practice-mode chooser (Scenario Questions vs Roleplay) */
+.practiceChoice {
+  padding: 20px 8px 32px;
+}
+
+.choiceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.choiceCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 22px;
+  border: 2px solid #d0d7de;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, transform 0.05s, box-shadow 0.15s;
+  font: inherit;
+  color: inherit;
+}
+
+.choiceCard:hover:not(:disabled) {
+  border-color: #0969da;
+  box-shadow: 0 4px 12px rgba(9, 105, 218, 0.12);
+  transform: translateY(-1px);
+}
+
+.choiceCard:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.choiceIcon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.choiceCard h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #24292f;
+}
+
+.choiceCard p {
+  margin: 0;
+  color: #57606a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.choiceMeta {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 12px;
+  color: #6e7781;
+  font-style: italic;
+}

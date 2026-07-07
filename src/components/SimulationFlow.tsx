@@ -12,11 +12,15 @@ interface ConversationMessage {
 interface SimulationFlowProps {
   indicatorCode: IndicatorCode;
   onComplete: () => void;
+  teacherId?: string;
+  trainingCode?: string;
 }
 
 export const SimulationFlow: React.FC<SimulationFlowProps> = ({
   indicatorCode,
   onComplete,
+  teacherId,
+  trainingCode,
 }) => {
   const simulation = (simulationsData as any)[indicatorCode];
 
@@ -171,6 +175,8 @@ export const SimulationFlow: React.FC<SimulationFlowProps> = ({
           conversationHistory: updatedHistory,
           turnNumber,
           maxTurns: simulation.maxTurns,
+          teacherId,
+          trainingCode,
         }),
       });
 

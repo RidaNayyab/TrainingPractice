@@ -7,12 +7,16 @@ interface PracticeFlowProps {
   indicatorCode: IndicatorCode;
   onComplete: () => void;
   questions?: any[];
+  teacherId?: string;
+  trainingCode?: string;
 }
 
 export const PracticeFlow: React.FC<PracticeFlowProps> = ({
   indicatorCode,
   onComplete,
   questions: providedQuestions,
+  teacherId,
+  trainingCode,
 }) => {
   const questions = providedQuestions || practiceQuestions.filter(
     (q) => q.indicatorCode === indicatorCode
@@ -229,6 +233,8 @@ export const PracticeFlow: React.FC<PracticeFlowProps> = ({
           rubricCriteria: currentQuestion.rubricCriteria,
           scenario: currentQuestion.scenario,
           prompt: currentQuestion.prompt,
+          teacherId,
+          trainingCode: trainingCode ?? currentQuestion.trainingCode,
         }),
       });
 
