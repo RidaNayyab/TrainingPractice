@@ -214,8 +214,10 @@ async function initialize() {
     console.log(`✅ Loaded tier data for ${tierCache.size} teachers`);
 
     // Ensure the teacher-response persistence table exists.
-    // Every scenario submission (with evaluation) and every completed roleplay session (with evaluation)
-    // gets one row here. Nothing gets dumped again.
+    // - Scenario mode: one row per submitted question (with evaluation).
+    // - Roleplay mode: one row per SESSION, upserted on every turn — abandoned sessions still keep
+    //   whatever was completed. session_id ties turns together; evaluation stays null until the
+    //   final turn scoring.
     await dbClient.query(`
       CREATE TABLE IF NOT EXISTS teacher_practice_attempts (
         id SERIAL PRIMARY KEY,
@@ -224,17 +226,32 @@ async function initialize() {
         training_code VARCHAR(50),
         mode VARCHAR(20) NOT NULL,
         question_id VARCHAR(100),
+        session_id VARCHAR(64),
+        turn_number INTEGER,
+        is_complete BOOLEAN DEFAULT FALSE,
         scenario TEXT,
         prompt TEXT,
         rubric_criteria TEXT[],
         response TEXT,
         conversation_history JSONB,
-        evaluation JSONB NOT NULL,
-        created_at TIMESTAMP DEFAULT NOW()
+        evaluation JSONB,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
+    // Older DBs may have the pre-migration NOT NULL constraint + missing columns — apply idempotently.
+    await dbClient.query(`ALTER TABLE teacher_practice_attempts ALTER COLUMN evaluation DROP NOT NULL`).catch(() => {});
+    await dbClient.query(`ALTER TABLE teacher_practice_attempts ADD COLUMN IF NOT EXISTS session_id VARCHAR(64)`);
+    await dbClient.query(`ALTER TABLE teacher_practice_attempts ADD COLUMN IF NOT EXISTS turn_number INTEGER`);
+    await dbClient.query(`ALTER TABLE teacher_practice_attempts ADD COLUMN IF NOT EXISTS is_complete BOOLEAN DEFAULT FALSE`);
+    await dbClient.query(`ALTER TABLE teacher_practice_attempts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`);
     await dbClient.query(`CREATE INDEX IF NOT EXISTS idx_tpa_teacher ON teacher_practice_attempts (teacher_id)`);
     await dbClient.query(`CREATE INDEX IF NOT EXISTS idx_tpa_ind_train ON teacher_practice_attempts (indicator_code, training_code)`);
+    // Drop the older partial-unique variant if present (ON CONFLICT can't use partial indexes)
+    await dbClient.query(`DROP INDEX IF EXISTS idx_tpa_session`);
+    // Regular UNIQUE index — multiple NULL session_ids are treated as distinct by Postgres,
+    // so scenario-mode rows (session_id NULL) coexist freely.
+    await dbClient.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tpa_session_unique ON teacher_practice_attempts (session_id)`);
     console.log(`✅ teacher_practice_attempts table ready`);
 
     await dbClient.end();
@@ -248,21 +265,26 @@ async function initialize() {
   }
 }
 
-// Persist a teacher practice attempt (scenario or roleplay) with its coaching feedback.
-// Uses a short-lived Client rather than a pool; fire-and-log-only-on-error so a persistence
-// failure never blocks the coaching feedback from reaching the teacher.
+// Persist a teacher practice attempt (scenario or roleplay).
+// - Scenario: always INSERT — each submitted question is a fresh row.
+// - Roleplay: upsert-by-session_id — first turn INSERTs, subsequent turns UPDATE the same row
+//   (so abandoned mid-sessions still keep whatever was captured).
+// Fire-and-log-on-error so persistence failure never blocks coaching feedback from reaching the teacher.
 async function persistPracticeAttempt(row: {
   teacherId: string;
   indicatorCode: string;
   trainingCode?: string;
   mode: 'scenario' | 'roleplay';
   questionId?: string;
+  sessionId?: string;      // required for roleplay upsert
+  turnNumber?: number;
+  isComplete?: boolean;
   scenario?: string;
   prompt?: string;
   rubricCriteria?: string[];
   response?: string;
   conversationHistory?: any[];
-  evaluation: any;
+  evaluation?: any | null;  // null for mid-roleplay turns, populated on scenario submit + roleplay final turn
 }): Promise<void> {
   const conn = new Client({
     host: process.env.PGHOST,
@@ -273,27 +295,62 @@ async function persistPracticeAttempt(row: {
   });
   try {
     await conn.connect();
-    const r = await conn.query(
-      `INSERT INTO teacher_practice_attempts
-        (teacher_id, indicator_code, training_code, mode, question_id, scenario, prompt,
-         rubric_criteria, response, conversation_history, evaluation)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       RETURNING id`,
-      [
-        row.teacherId,
-        row.indicatorCode,
-        row.trainingCode || null,
-        row.mode,
-        row.questionId || null,
-        row.scenario || null,
-        row.prompt || null,
-        row.rubricCriteria || null,
-        row.response || null,
-        row.conversationHistory ? JSON.stringify(row.conversationHistory) : null,
-        JSON.stringify(row.evaluation),
-      ]
-    );
-    console.log(`[SAVE-ATTEMPT] id=${r.rows[0].id} teacher=${row.teacherId} ${row.mode}/${row.indicatorCode}/${row.trainingCode || '-'}`);
+
+    if (row.mode === 'roleplay' && row.sessionId) {
+      // Upsert on session_id: keeps a single row per roleplay session, updated turn-by-turn
+      const r = await conn.query(
+        `INSERT INTO teacher_practice_attempts
+          (teacher_id, indicator_code, training_code, mode, session_id, turn_number, is_complete,
+           scenario, prompt, rubric_criteria, conversation_history, evaluation, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
+         ON CONFLICT (session_id) DO UPDATE SET
+           turn_number = EXCLUDED.turn_number,
+           is_complete = EXCLUDED.is_complete OR teacher_practice_attempts.is_complete,
+           conversation_history = EXCLUDED.conversation_history,
+           evaluation = COALESCE(EXCLUDED.evaluation, teacher_practice_attempts.evaluation),
+           updated_at = NOW()
+         RETURNING id, (xmax = 0) AS inserted`,
+        [
+          row.teacherId,
+          row.indicatorCode,
+          row.trainingCode || null,
+          row.mode,
+          row.sessionId,
+          row.turnNumber ?? null,
+          !!row.isComplete,
+          row.scenario || null,
+          row.prompt || null,
+          row.rubricCriteria || null,
+          row.conversationHistory ? JSON.stringify(row.conversationHistory) : null,
+          row.evaluation ? JSON.stringify(row.evaluation) : null,
+        ]
+      );
+      const { id, inserted } = r.rows[0];
+      console.log(`[SAVE-ATTEMPT] ${inserted ? 'INSERT' : 'UPDATE'} id=${id} session=${row.sessionId} teacher=${row.teacherId} roleplay/${row.indicatorCode} turn=${row.turnNumber} complete=${row.isComplete}`);
+    } else {
+      // Scenario: always INSERT a new row per submitted question
+      const r = await conn.query(
+        `INSERT INTO teacher_practice_attempts
+          (teacher_id, indicator_code, training_code, mode, question_id, scenario, prompt,
+           rubric_criteria, response, evaluation, is_complete)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         RETURNING id`,
+        [
+          row.teacherId,
+          row.indicatorCode,
+          row.trainingCode || null,
+          row.mode,
+          row.questionId || null,
+          row.scenario || null,
+          row.prompt || null,
+          row.rubricCriteria || null,
+          row.response || null,
+          row.evaluation ? JSON.stringify(row.evaluation) : null,
+          true,
+        ]
+      );
+      console.log(`[SAVE-ATTEMPT] INSERT id=${r.rows[0].id} teacher=${row.teacherId} scenario/${row.indicatorCode}/${row.trainingCode || '-'} q=${row.questionId}`);
+    }
   } catch (err) {
     console.error('[ERROR] persistPracticeAttempt failed:', err instanceof Error ? err.message : err);
   } finally {
@@ -1228,7 +1285,7 @@ const simulations = JSON.parse(fs.readFileSync(simulationsPath, 'utf-8'));
 
 app.post('/api/simulate', async (req, res) => {
   try {
-    const { indicatorCode, conversationHistory, turnNumber, maxTurns, teacherId, trainingCode } = req.body;
+    const { indicatorCode, conversationHistory, turnNumber, maxTurns, teacherId, trainingCode, sessionId } = req.body;
 
     if (!indicatorCode || !conversationHistory || !Array.isArray(conversationHistory)) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -1325,12 +1382,15 @@ Provide feedback in JSON format:
       // Persist the completed roleplay session with its evaluation.
       // Includes the final student message so the conversation snapshot is complete.
       const fullHistory = [...conversationHistory, { role: 'student', message: studentMessage }];
-      if (teacherId) {
+      if (teacherId && sessionId) {
         persistPracticeAttempt({
           teacherId,
           indicatorCode,
           trainingCode,
           mode: 'roleplay',
+          sessionId,
+          turnNumber,
+          isComplete: true,
           scenario: simulation.setup,
           prompt: simulation.indicatorFocus,
           rubricCriteria: simulation.rubricCriteria,
@@ -1338,7 +1398,7 @@ Provide feedback in JSON format:
           evaluation: finalEval,
         });
       } else {
-        console.warn(`[WARN] /api/simulate final turn got no teacherId — roleplay session NOT persisted (indicator=${indicatorCode})`);
+        console.warn(`[WARN] /api/simulate final turn missing teacherId or sessionId — roleplay NOT persisted (indicator=${indicatorCode})`);
       }
 
       res.json({
@@ -1347,6 +1407,27 @@ Provide feedback in JSON format:
         evaluation: finalEval,
       });
     } else {
+      // Intermediate turn — save the partial conversation upsert-by-session so if the teacher
+      // abandons here, we still have their message + the student reply captured in the DB.
+      const partialHistory = [...conversationHistory, { role: 'student', message: studentMessage }];
+      if (teacherId && sessionId) {
+        persistPracticeAttempt({
+          teacherId,
+          indicatorCode,
+          trainingCode,
+          mode: 'roleplay',
+          sessionId,
+          turnNumber,
+          isComplete: false,
+          scenario: simulation.setup,
+          prompt: simulation.indicatorFocus,
+          rubricCriteria: simulation.rubricCriteria,
+          conversationHistory: partialHistory,
+        });
+      } else {
+        console.warn(`[WARN] /api/simulate intermediate turn missing teacherId or sessionId — turn NOT persisted (indicator=${indicatorCode}, turn=${turnNumber})`);
+      }
+
       res.json({
         studentMessage,
         isComplete: false,

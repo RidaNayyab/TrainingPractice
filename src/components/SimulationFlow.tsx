@@ -24,6 +24,14 @@ export const SimulationFlow: React.FC<SimulationFlowProps> = ({
 }) => {
   const simulation = (simulationsData as any)[indicatorCode];
 
+  // One session_id per roleplay run — sent with every /api/simulate call so the backend
+  // upserts a single row per session and captures every turn (even abandoned mid-sessions).
+  const [sessionId] = useState<string>(() =>
+    (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
+      ? (crypto as any).randomUUID()
+      : `sess-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+  );
+
   const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([
     { role: 'student', message: simulation.initialStudentMessage },
   ]);
@@ -177,6 +185,7 @@ export const SimulationFlow: React.FC<SimulationFlowProps> = ({
           maxTurns: simulation.maxTurns,
           teacherId,
           trainingCode,
+          sessionId,
         }),
       });
 
