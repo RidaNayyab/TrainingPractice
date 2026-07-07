@@ -10,7 +10,49 @@ dotenv.config({ path: '.env.local' });
 
 const app = express();
 const PORT = 3001;
-const client = new Anthropic();
+const client = new Anthropic();  // kept for legacy fallback; primary AI path is now OpenRouter
+
+// ─── OpenRouter (OpenAI-compatible) chat helper ────────────────────────────
+// Used for question generation, training matcher, response evaluator, and AI-student simulator.
+// GPT-5.1 via OpenRouter is the single AI provider for all Claude-style calls in this server.
+const OPENROUTER_MODEL = 'openai/gpt-5.1';
+const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
+
+interface ORMessage { role: 'system' | 'user' | 'assistant'; content: string; }
+
+async function callOpenRouterChat(opts: {
+  model?: string;
+  system?: string;
+  messages: ORMessage[];
+  maxTokens?: number;
+  temperature?: number;
+}): Promise<string> {
+  if (!process.env.OPENROUTER_API_KEY) {
+    throw new Error('OPENROUTER_API_KEY not set in .env.local');
+  }
+  const fullMessages: ORMessage[] = opts.system
+    ? [{ role: 'system', content: opts.system }, ...opts.messages]
+    : opts.messages;
+  const r = await fetch(OPENROUTER_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: opts.model || OPENROUTER_MODEL,
+      max_tokens: opts.maxTokens ?? 800,
+      temperature: opts.temperature ?? 0.7,
+      messages: fullMessages,
+    }),
+  });
+  if (!r.ok) {
+    const errText = await r.text();
+    throw new Error(`OpenRouter ${r.status}: ${errText.slice(0, 400)}`);
+  }
+  const data = await r.json();
+  return data.choices?.[0]?.message?.content ?? '';
+}
 
 app.use(cors());
 // Raw binary handling for audio uploads
@@ -492,13 +534,11 @@ DECISION FRAMEWORK:
 
 Respond with ONLY a single digit: the number of the best-matched training.`;
 
-    const response = await client.messages.create({
-      model: 'claude-opus-4-7',
-      max_tokens: 10,
-      messages: [{ role: 'user', content: prompt }]
-    });
-
-    const text = response.content[0].type === 'text' ? response.content[0].text.trim() : '1';
+    const text = (await callOpenRouterChat({
+      messages: [{ role: 'user', content: prompt }],
+      maxTokens: 10,
+      temperature: 0.3,
+    })).trim();
     const match = parseInt(text);
     if (isNaN(match)) {
       console.warn(`[WARN] matchTrainingToFeedback got non-numeric response: "${text}" — defaulting to 0`);
@@ -1223,14 +1263,12 @@ FEEDBACK RULES (the "feedback" string — short coaching nudge, peer-to-peer):
 
 Return ONLY the JSON object — no preamble, no fence, no trailing text.`;
 
-    const response_obj = await client.messages.create({
-      model: 'claude-opus-4-7',
-      max_tokens: 800,
-      messages: [{ role: 'user', content: evaluationPrompt }]
+    const responseText = await callOpenRouterChat({
+      messages: [{ role: 'user', content: evaluationPrompt }],
+      maxTokens: 800,
+      temperature: 0.3,
     });
-
-    const responseText = response_obj.content[0].type === 'text' ? response_obj.content[0].text : '{}';
-    console.log('Claude evaluation response:', responseText);
+    console.log('OpenRouter evaluation response:', responseText);
 
     // Parse JSON response
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
@@ -1317,14 +1355,12 @@ ${
     : ''
 }`;
 
-    const message = await client.messages.create({
-      model: 'claude-opus-4-7',
-      max_tokens: 150,
+    const studentMessage = await callOpenRouterChat({
       system: studentSystemPrompt,
-      messages: conversationForClaude,
+      messages: conversationForClaude as ORMessage[],
+      maxTokens: 150,
+      temperature: 0.8,  // slightly warmer for more natural student voice
     });
-
-    const studentMessage = message.content[0].type === 'text' ? message.content[0].text : '';
 
     if (turnNumber === maxTurns) {
       // Evaluate the entire conversation
@@ -1351,13 +1387,11 @@ Provide feedback in JSON format:
   "rubric_criteria_missed": [...]
 }`;
 
-      const evaluationMessage = await client.messages.create({
-        model: 'claude-opus-4-7',
-        max_tokens: 400,
+      const evaluationText = await callOpenRouterChat({
         messages: [{ role: 'user', content: evaluationPrompt }],
+        maxTokens: 400,
+        temperature: 0.3,
       });
-
-      const evaluationText = evaluationMessage.content[0].type === 'text' ? evaluationMessage.content[0].text : '{}';
 
       let evaluation;
       try {

@@ -6,19 +6,23 @@
 
 | Provider | Purpose | Env var |
 |---|---|---|
-| **OpenRouter** | Question generation (`/api/generate-questions`) — model `openai/gpt-5.1` | `OPENROUTER_API_KEY` |
-| **Anthropic** | Training-matcher, response evaluator, student simulator | `ANTHROPIC_API_KEY` |
+| **OpenRouter** | ALL AI calls — question generation, training matcher, response evaluator, AI-student simulator. Model: `openai/gpt-5.1` | `OPENROUTER_API_KEY` |
+| **Anthropic** | Legacy fallback only (kept for the `provider: "anthropic"` branch in `questionGenerationPrompt.json`) | `ANTHROPIC_API_KEY` (optional) |
 | **Soniox** | Audio transcription | `SONIOX_API_KEY` |
-| **Railway PostgreSQL** | Own DB (`generated_practice_questions`, observations) | `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` |
+| **Railway PostgreSQL** | Own DB (`generated_practice_questions`, `teacher_practice_attempts`, observations) | `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` |
 | **NIETE FDE PostgreSQL** | Source of truth for observations, teachers, scorecard | `FDE_DATABASE_HOST`, `FDE_DATABASE_PORT`, `FDE_DATABASE_NAME`, `FDE_DATABASE_USER`, `FDE_DATABASE_PASSWORD` |
 
-## Provider split for AI calls
+## AI provider unified: OpenRouter · GPT-5.1
 
-By design, question **generation** uses OpenRouter/GPT-5.1 while all other AI calls stay on Claude. This gives us:
-- Two independent AI providers (redundancy — if one is down, the rest of the app still works)
-- Different model strengths for different jobs (GPT-5.1 for creative generation, Claude for precise coaching/evaluation)
+Every AI call in the server now goes through `callOpenRouterChat()` in `src/server.ts` — a single OpenAI-compatible chat helper that hits `openrouter.ai/api/v1/chat/completions`. This includes:
+- `/api/generate-questions` — 2-question pipeline generation
+- `matchTrainingToFeedback()` — picks a specific training video based on coach's feedback content
+- `/api/evaluate` — scores teacher response + coaching nudge
+- `/api/simulate` — AI student turns + final roleplay evaluation
 
-Provider selection is controlled by `src/data/questionGenerationPrompt.json`:
+Legacy Anthropic SDK client is still constructed at boot for the `provider: "anthropic"` fallback branch in question generation, but that branch is unused in the current configuration.
+
+Provider selection for question generation is controlled by `src/data/questionGenerationPrompt.json`:
 ```json
 "config": {
   "model": "openai/gpt-5.1",
@@ -27,8 +31,6 @@ Provider selection is controlled by `src/data/questionGenerationPrompt.json`:
   "temperature": 0.7
 }
 ```
-
-Setting `provider` back to `anthropic` (or any non-`openrouter` value) and choosing a Claude model ID falls back to the Anthropic SDK path — the code path is still there.
 
 ## OpenRouter specifics
 
