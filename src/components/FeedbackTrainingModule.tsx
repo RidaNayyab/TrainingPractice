@@ -199,7 +199,6 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
 
       {state === 'practice' && practiceMode === null && (() => {
         const hasGeneratedQuestions = Array.isArray(practiceQuestions) && practiceQuestions.length > 0;
-        const hasSimulation = !!(simulationsData as any)[indicatorCode];
         return (
           <div className={styles.practiceChoice}>
             <div className={styles.header}>
@@ -221,12 +220,11 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
               <button
                 className={styles.choiceCard}
                 onClick={() => setPracticeMode('roleplay')}
-                disabled={!hasSimulation}
               >
                 <div className={styles.choiceIcon}>🎭</div>
                 <h3>Roleplay</h3>
                 <p>An AI student talks to you. You reply as the teacher. Up to 3 turns of dynamic back-and-forth shaped by your responses.</p>
-                <span className={styles.choiceMeta}>{hasSimulation ? 'Simulation ready' : 'Not available for this indicator yet'}</span>
+                <span className={styles.choiceMeta}>Fresh scene every session</span>
               </button>
             </div>
           </div>

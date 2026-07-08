@@ -1,11 +1,15 @@
-import React, { useState, useRef } from 'react';
-import { apiService } from '../services/api';
-import simulationsData from '../data/simulations.json';
+import React, { useState, useRef, useEffect } from 'react';
 import { IndicatorCode } from '../types/index';
 import styles from './SimulationFlow.module.css';
 
+// Roleplay flow driven by the prompt template at .claude/context/roleplay_prompt.md.
+// The AI acts as the STUDENT in a Pakistani government-school classroom, dynamically
+// setting the scene at turn 0 and playing the student for up to 3 teacher-turns.
+// It scores internally against the FICO rubric and steps out to give coaching
+// feedback either early (PASS) or after turn 3 (FINAL).
+
 interface ConversationMessage {
-  role: 'student' | 'teacher';
+  role: 'scene' | 'student' | 'teacher' | 'coach';
   message: string;
 }
 
@@ -22,9 +26,7 @@ export const SimulationFlow: React.FC<SimulationFlowProps> = ({
   teacherId,
   trainingCode,
 }) => {
-  const simulation = (simulationsData as any)[indicatorCode];
-
-  // One session_id per roleplay run — sent with every /api/simulate call so the backend
+  // One session_id per roleplay run — sent with every /api/roleplay call so the backend
   // upserts a single row per session and captures every turn (even abandoned mid-sessions).
   const [sessionId] = useState<string>(() =>
     (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
@@ -32,17 +34,16 @@ export const SimulationFlow: React.FC<SimulationFlowProps> = ({
       : `sess-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
   );
 
-  const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([
-    { role: 'student', message: simulation.initialStudentMessage },
-  ]);
+  // Dynamic conversation. Starts empty until turn 0 (scene setup) is fetched on mount.
+  const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([]);
   const [currentInput, setCurrentInput] = useState('');
-  const [turnNumber, setTurnNumber] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [turnNumber, setTurnNumber] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);   // true during initial scene fetch
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [evaluation, setEvaluation] = useState<any>(null);
+  const [ending, setEnding] = useState<null | { type: 'PASS' | 'FINAL'; feedback: string }>(null);
   const [error, setError] = useState<string | null>(null);
-  const [scenarioCollapsed, setScenarioCollapsed] = useState(false);
+  const MAX_TURNS = 3;
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -52,9 +53,39 @@ export const SimulationFlow: React.FC<SimulationFlowProps> = ({
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     scrollToBottom();
   }, [conversationHistory, isLoading]);
+
+  // On mount: call /api/roleplay with empty history to get the scene setup + first student cue.
+  const bootstrappedRef = useRef(false);
+  useEffect(() => {
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
+    (async () => {
+      try {
+        const r = await fetch('http://localhost:3001/api/roleplay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            indicatorCode, trainingCode, teacherId, sessionId,
+            conversationHistory: [],
+            turnNumber: 0,
+          }),
+        });
+        if (!r.ok) throw new Error(`Roleplay init failed: ${r.status}`);
+        const data = await r.json();
+        // Scene appears as the opening message. Immediately advance to turn 1 so the teacher can respond.
+        setConversationHistory([{ role: 'scene', message: data.message }]);
+        setTurnNumber(1);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to start roleplay');
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const startRecording = async () => {
     try {
@@ -166,84 +197,59 @@ export const SimulationFlow: React.FC<SimulationFlowProps> = ({
     setIsLoading(true);
     setError(null);
 
-    try {
-      // Add teacher message to history
-      const updatedHistory: ConversationMessage[] = [
-        ...conversationHistory,
-        { role: 'teacher', message: teacherMessage },
-      ];
-      setConversationHistory(updatedHistory);
+    // Add teacher message to history immediately (optimistic)
+    const updatedHistory: ConversationMessage[] = [
+      ...conversationHistory,
+      { role: 'teacher', message: teacherMessage },
+    ];
+    setConversationHistory(updatedHistory);
 
-      // Get AI student response and evaluation if final turn
-      const response = await fetch('http://localhost:3001/api/simulate', {
+    try {
+      const response = await fetch('http://localhost:3001/api/roleplay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           indicatorCode,
+          trainingCode,
+          teacherId,
+          sessionId,
           conversationHistory: updatedHistory,
           turnNumber,
-          maxTurns: simulation.maxTurns,
-          teacherId,
-          trainingCode,
-          sessionId,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get student response');
+        throw new Error(`Roleplay error: ${response.status}`);
       }
 
       const data = await response.json();
 
-      // Add student response
-      setConversationHistory((prev) => [
-        ...prev,
-        { role: 'student', message: data.studentMessage },
-      ]);
-
-      if (data.isComplete && data.evaluation) {
-        setEvaluation(data.evaluation);
+      if (data.isComplete) {
+        // AI stepped out of student role — show coaching feedback (PASS or FINAL ending)
+        setConversationHistory(prev => [...prev, { role: 'coach', message: data.message }]);
+        setEnding({ type: data.ending || 'FINAL', feedback: data.coachingFeedback || data.message });
       } else {
-        setTurnNumber(turnNumber + 1);
+        // Still in student role — append the next student utterance
+        setConversationHistory(prev => [...prev, { role: 'student', message: data.message }]);
+        setTurnNumber(prev => prev + 1);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to continue conversation');
-      setConversationHistory((prev) => prev.slice(0, -1)); // Remove the message we just added
+      setError(err instanceof Error ? err.message : 'Failed to continue roleplay');
+      setConversationHistory(prev => prev.slice(0, -1)); // remove the optimistic teacher message on failure
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isComplete = evaluation !== null;
-  const canSubmit = currentInput.trim().length > 0 && !isLoading && !isRecording;
+  const isComplete = ending !== null;
+  const canSubmit = currentInput.trim().length > 0 && !isLoading && !isRecording && turnNumber >= 1 && !isComplete;
 
   return (
     <div className={styles.simulationFlow}>
-      {/* Scenario Card */}
-      {!scenarioCollapsed && (
-        <div className={styles.scenarioCard}>
-          <div className={styles.scenarioHeader}>
-            <h3>{simulation.title}</h3>
-            <button
-              className={styles.collapseBtn}
-              onClick={() => setScenarioCollapsed(true)}
-            >
-              ×
-            </button>
-          </div>
-          <div className={styles.scenarioContent}>
-            <p className={styles.setup}>{simulation.setup}</p>
-            <div className={styles.focus}>
-              <strong>Focus:</strong> {simulation.indicatorFocus}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Turn indicator */}
-      {!isComplete && (
+      {/* Turn indicator (hidden during initial scene fetch and after completion) */}
+      {!isComplete && turnNumber >= 1 && (
         <div className={styles.turnIndicator}>
-          Turn {turnNumber} of {simulation.maxTurns}
+          Turn {turnNumber} of {MAX_TURNS}
         </div>
       )}
 
@@ -254,15 +260,17 @@ export const SimulationFlow: React.FC<SimulationFlowProps> = ({
             key={idx}
             className={`${styles.messageBubble} ${styles[msg.role]}`}
           >
+            {msg.role === 'scene' && <span className={styles.speaker}>🎬 Scene</span>}
             {msg.role === 'student' && <span className={styles.speaker}>🧑‍🎓 Student</span>}
             {msg.role === 'teacher' && <span className={styles.speaker}>👨‍🏫 You</span>}
+            {msg.role === 'coach' && <span className={styles.speaker}>💬 Coach</span>}
             <p className={styles.messageText}>{msg.message}</p>
           </div>
         ))}
 
         {isLoading && (
           <div className={styles.messageBubble + ' ' + styles.student}>
-            <span className={styles.speaker}>🧑‍🎓 Student</span>
+            <span className={styles.speaker}>{turnNumber === 0 ? '🎬 Setting the scene' : '🧑‍🎓 Student'}</span>
             <p className={styles.messageText}>
               <span className={styles.typing}>thinking...</span>
             </p>
@@ -272,38 +280,13 @@ export const SimulationFlow: React.FC<SimulationFlowProps> = ({
         <div ref={chatEndRef} />
       </div>
 
-      {/* Evaluation */}
-      {isComplete && evaluation && (
+      {/* Ending / coaching card */}
+      {isComplete && ending && (
         <div className={styles.evaluationCard}>
-          <h4>Session Evaluation</h4>
-          <div className={`${styles.scoreSection} ${styles[evaluation.score.toLowerCase()]}`}>
-            <span className={styles.scoreLabel}>Score</span>
-            <span className={styles.scoreValue}>{evaluation.score}</span>
-          </div>
+          <h4>{ending.type === 'PASS' ? '✅ Session complete — you nailed it' : '🌱 Session complete — one step further'}</h4>
           <div className={styles.feedback}>
-            <p>{evaluation.feedback}</p>
+            <p style={{ whiteSpace: 'pre-wrap' }}>{ending.feedback}</p>
           </div>
-          {evaluation.rubric_criteria_met && evaluation.rubric_criteria_met.length > 0 && (
-            <div className={styles.criteria}>
-              <h5>✅ Well Done:</h5>
-              <ul>
-                {evaluation.rubric_criteria_met.map((criterion: string, i: number) => (
-                  <li key={i}>{criterion}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {evaluation.rubric_criteria_missed &&
-            evaluation.rubric_criteria_missed.length > 0 && (
-              <div className={styles.criteria}>
-                <h5>💡 Next Time:</h5>
-                <ul>
-                  {evaluation.rubric_criteria_missed.map((criterion: string, i: number) => (
-                    <li key={i}>{criterion}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
           <button className={styles.finishBtn} onClick={onComplete}>
             ← Back to Observations
           </button>

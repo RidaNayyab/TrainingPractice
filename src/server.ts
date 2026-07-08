@@ -112,6 +112,20 @@ try {
   console.warn(`[WARN] Could not load FICO rubric from ${ficoRubricPath}:`, (e as any).message);
 }
 
+// Load the roleplay prompt template. This is the source of truth for /api/roleplay behavior —
+// edit .claude/context/roleplay_prompt.md and restart the server, no code changes needed.
+const roleplayPromptPath = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..', '.claude', 'context', 'roleplay_prompt.md');
+let roleplayPromptTemplate = '';
+try {
+  const raw = fs.readFileSync(roleplayPromptPath, 'utf-8');
+  // Extract the fenced ``` block that holds the actual prompt (skip the surrounding docs)
+  const m = raw.match(/```\s*\n([\s\S]*?)\n```/);
+  roleplayPromptTemplate = m ? m[1].trim() : raw.trim();
+  console.log(`[DEBUG] Roleplay prompt loaded: ${roleplayPromptTemplate.length} chars`);
+} catch (e) {
+  console.warn(`[WARN] Could not load roleplay prompt from ${roleplayPromptPath}:`, (e as any).message);
+}
+
 // Debug: Log SI1 and SI3 priority ranks at startup
 const si1Rank = priorityMatrix.tiers.tier_1_structural.indicators.SI1.priority_rank;
 const si3Rank = priorityMatrix.tiers.tier_1_structural.indicators.SI3.priority_rank;
@@ -1470,6 +1484,146 @@ Provide feedback in JSON format:
   } catch (err) {
     console.error('Simulation error:', err);
     res.status(500).json({ error: 'Failed to generate student response' });
+  }
+});
+
+// ─── Roleplay endpoint (prompt-driven, dynamic) ─────────────────────────────
+// Uses the template from .claude/context/roleplay_prompt.md.
+// On every call:
+//   1. Interpolate INDICATOR, INDICATOR_RUBRIC, TRAINING_SUMMARY into the template.
+//   2. Send template as system prompt + conversation-so-far to GPT-5.1.
+//   3. Model returns JSON { message, isComplete, ending, coachingFeedback }.
+//   4. Persist the turn to teacher_practice_attempts (session upsert), returning the model's reply.
+app.post('/api/roleplay', async (req, res) => {
+  try {
+    const {
+      indicatorCode,
+      trainingCode,
+      teacherId,
+      sessionId,
+      conversationHistory = [],
+      turnNumber,
+    } = req.body;
+
+    if (!indicatorCode) return res.status(400).json({ error: 'indicatorCode required' });
+    if (!roleplayPromptTemplate) return res.status(500).json({ error: 'Roleplay prompt template not loaded on server' });
+
+    // Interpolate live context
+    const indicatorName = ficoNameMap[indicatorCode] || indicatorCode;
+    const indicatorRubric = ficoRubricMap[indicatorCode] || '(no rubric found for this indicator)';
+    const trainingInfo = trainings[indicatorCode];
+    const resource = trainingInfo?.resources?.find((r: any) => r.code === trainingCode);
+    const trainingSummary = resource
+      ? `Title: ${resource.title}\nLevel: ${resource.level}\nDomain: ${resource.domain}\nRationale: ${resource.rationale}`
+      : `Training code: ${trainingCode || '(none provided)'}`;
+
+    // Count teacher turns already in history — this is the ground truth signal for "how many
+    // chances has she used", independent of any turn number the client sends.
+    const teacherTurnsSoFar = (conversationHistory || []).filter((m: any) => m.role === 'teacher').length;
+
+    // Build a very explicit "what to do RIGHT NOW" instruction based on state.
+    let situationDirective = '';
+    if (teacherTurnsSoFar === 0) {
+      situationDirective = `IMMEDIATE INSTRUCTION: The conversation is empty. This is turn 0. Follow the BEFORE TURN 1 — SET THE SCENE instructions. Return the scene text (2-3 lines) in "message", isComplete=false, ending=null.`;
+    } else if (teacherTurnsSoFar < 3) {
+      situationDirective = `IMMEDIATE INSTRUCTION: The teacher has responded ${teacherTurnsSoFar} time(s) so far. Read her most recent teacher message and score it against the rubric.
+- If she has met Level 3 or 4 of the rubric → step out and give the PASS ENDING coaching. Return isComplete=true, ending="PASS", the 4-5 sentence coaching in both "message" and "coachingFeedback".
+- If she has NOT met Level 3 or 4 → continue as the student. Return the next student utterance (1-3 lines) in "message", isComplete=false, ending=null.`;
+    } else {
+      situationDirective = `IMMEDIATE INSTRUCTION: The teacher has already responded 3 times. This is the FORCED FINAL ENDING regardless of score. You MUST step out of the student role now. Do NOT return another student utterance. Return isComplete=true, ending="FINAL", the 5-6 sentence FINAL ENDING coaching in both "message" and "coachingFeedback". Follow the FINAL ENDING structure from the template.`;
+    }
+
+    const contextBlock = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXT FOR THIS SESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INDICATOR: ${indicatorCode} — ${indicatorName}
+
+INDICATOR_RUBRIC:
+${indicatorRubric}
+
+TRAINING_SUMMARY:
+${trainingSummary}
+
+Teacher turns used so far: ${teacherTurnsSoFar} of 3
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${situationDirective}
+
+RESPONSE FORMAT (return ONLY this JSON object, no markdown fences, no preamble):
+{
+  "message": "string — scene text OR student utterance OR coaching feedback",
+  "isComplete": true or false,
+  "ending": "PASS" or "FINAL" or null,
+  "coachingFeedback": "string when isComplete=true, otherwise null"
+}
+`;
+
+    const systemPrompt = contextBlock + '\n' + roleplayPromptTemplate;
+
+    // Map conversation to OpenAI-format for OpenRouter
+    // 'student' or 'scene' role from our app → 'assistant' in the API. 'teacher' → 'user'.
+    const messages: ORMessage[] = conversationHistory.map((m: any) => ({
+      role: m.role === 'teacher' ? 'user' : 'assistant',
+      content: m.message,
+    }));
+    // If conversationHistory is empty (turn 0), still need a user message to trigger a response
+    if (messages.length === 0) {
+      messages.push({ role: 'user', content: '[Begin the session — set the scene.]' });
+    }
+
+    const rawText = await callOpenRouterChat({
+      system: systemPrompt,
+      messages,
+      maxTokens: 500,
+      temperature: 0.8,
+    });
+
+    // Parse the JSON envelope (strip any accidental fences)
+    let parsed: any;
+    try {
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { message: rawText, isComplete: false, ending: null };
+    } catch {
+      parsed = { message: rawText, isComplete: false, ending: null };
+    }
+
+    const message = String(parsed.message || '').trim();
+    const isComplete = !!parsed.isComplete;
+    const ending = parsed.ending || null;
+    const coachingFeedback = parsed.coachingFeedback || (isComplete ? message : null);
+
+    // Build the updated history for persistence (add the AI's turn as 'student' or 'scene' as appropriate)
+    const historyForSave = [...conversationHistory];
+    if (message) {
+      const role = (turnNumber === 0 || conversationHistory.length === 0) ? 'scene' : (isComplete ? 'coach' : 'student');
+      historyForSave.push({ role, message });
+    }
+
+    // Persist turn-by-turn (upsert on session_id)
+    if (teacherId && sessionId) {
+      persistPracticeAttempt({
+        teacherId,
+        indicatorCode,
+        trainingCode,
+        mode: 'roleplay',
+        sessionId,
+        turnNumber: turnNumber ?? 0,
+        isComplete,
+        scenario: indicatorName,
+        prompt: resource?.title || null,
+        rubricCriteria: undefined,
+        conversationHistory: historyForSave,
+        evaluation: isComplete ? { ending, feedback: coachingFeedback } : null,
+      });
+    } else {
+      console.warn(`[WARN] /api/roleplay missing teacherId or sessionId — turn NOT persisted (indicator=${indicatorCode}, turn=${turnNumber})`);
+    }
+
+    res.json({ message, isComplete, ending, coachingFeedback });
+  } catch (err) {
+    console.error('[ERROR] /api/roleplay:', err instanceof Error ? err.message : err);
+    res.status(500).json({ error: 'Roleplay failed: ' + (err instanceof Error ? err.message : String(err)) });
   }
 });
 
