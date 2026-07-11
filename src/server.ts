@@ -234,6 +234,160 @@ async function loadFdeIndicatorStats() {
   }
 }
 
+// ─── NIETE observation loader ─────────────────────────────────────────────
+// Loads every completed FICO V3 observation from NIETE into memory with the joined
+// region/school/teacher context. Also derives per-observation `improvement_areas`
+// (flagged indicators from score_type='no' rows) and a `results_json.section_b` view
+// so the existing FeedbackTrainingModule flow (matcher, flagged-indicator detection,
+// coaching) works unchanged.
+
+interface NieteObservation {
+  id: string;
+  teacher_id: string;
+  teacher_name: string;
+  school_id: string;
+  school_name: string;
+  region_id: string | null;
+  region_name: string;
+  subject: string | null;
+  grade: string | null;
+  topic: string | null;
+  observation_date: string;
+  feedback_english: string;
+  transcription: string | null;
+  rubric_type: string;
+  created_at: string;
+  improvement_areas: { indicator_code: string; indicator_name: string; score: string }[];
+  results_json: { section_b: Record<string, string> };
+  source: 'niete';
+}
+
+let nieteObsCache: NieteObservation[] = [];
+
+async function loadNieteObservations() {
+  if (!fdePool) {
+    console.log('[DEBUG] NIETE observations skipped — FDE pool not configured');
+    return;
+  }
+  try {
+    // Pull all completed FICO V3 observation headers with joined context
+    const headers = await fdePool.query(`
+      SELECT
+        co.id::text                                              AS observation_id,
+        co.observation_date::text                                AS observation_date,
+        co.feedback,
+        u.id::text                                               AS user_id,
+        u.name                                                   AS teacher_name,
+        s.id::text                                               AS school_id,
+        s.name                                                   AS school_name,
+        s.region_id::text                                        AS region_id,
+        sr.name                                                  AS region_name,
+        COALESCE(lp.tags->>'subject_label', lp.tags->>'subject') AS subject,
+        lp.tags->>'grade'                                        AS grade,
+        lp.tags->>'topic'                                        AS topic
+      FROM fde_production.coaching_observation co
+      JOIN fde_production.users_teacherprofile tp ON tp.id = co.user_profile_object_id
+      JOIN fde_production.users_user u             ON u.id  = tp.user_id
+      JOIN fde_production.schools_school s         ON s.id  = tp.school_id
+      LEFT JOIN fde_production.schools_schoolregion sr ON sr.id = s.region_id
+      LEFT JOIN fde_production.lesson_plan_corelessonplan lp     ON lp.id = co.lesson_plan_id
+      WHERE co.template_id = 2
+        AND co.status = 'completed'
+      ORDER BY co.observation_date DESC
+    `);
+
+    // Pull all scored answers for these observations so we can build improvement_areas per row
+    const answers = await fdePool.query(`
+      SELECT
+        a.observation_id::text AS observation_id,
+        a.question_id::text    AS question_id,
+        opt.score_type
+      FROM fde_production.coaching_observation co
+      JOIN fde_production.coaching_observationanswer a ON a.observation_id = co.id
+      JOIN fde_production.coaching_observationquestion q ON q.id = a.question_id
+      LEFT JOIN fde_production.coaching_questionoption opt ON opt.id = a.single_choice_option_id
+      WHERE co.template_id = 2 AND co.status = 'completed'
+        AND q.is_scored = true
+    `);
+
+    // Build a question_id → indicator_code map by matching DB prompts to FICO descriptions.
+    // Reuses the same logic as loadFdeIndicatorStats.
+    const qMap = await fdePool.query(`
+      SELECT q.id::text AS question_id, q.prompt
+      FROM fde_production.coaching_observationquestion q
+      JOIN fde_production.coaching_observationsection sec ON sec.id = q.section_id
+      WHERE q.is_scored = true AND sec.title LIKE '%V3%'
+    `);
+    const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+    const questionIdToIndicator = new Map<string, string>();
+    for (const row of qMap.rows) {
+      const promptNorm = norm(row.prompt);
+      for (const [code, desc] of Object.entries(ficoDescMap)) {
+        if (promptNorm.startsWith(norm(desc).slice(0, 60))) {
+          questionIdToIndicator.set(row.question_id, code);
+          break;
+        }
+      }
+    }
+
+    // Group answers by observation and derive improvement_areas + results_json.section_b
+    type AnswerRow = { observation_id: string; question_id: string; score_type: string | null };
+    const answersByObs: Record<string, AnswerRow[]> = {};
+    for (const a of answers.rows) {
+      if (!answersByObs[a.observation_id]) answersByObs[a.observation_id] = [];
+      answersByObs[a.observation_id].push(a);
+    }
+
+    nieteObsCache = headers.rows.map((h: any) => {
+      const obsAnswers = answersByObs[h.observation_id] || [];
+      const improvement_areas: { indicator_code: string; indicator_name: string; score: string }[] = [];
+      const section_b: Record<string, string> = {};
+      for (const a of obsAnswers) {
+        const code = questionIdToIndicator.get(a.question_id);
+        if (!code) continue;
+        if (!a.score_type) continue;
+        const rubricScore = a.score_type === 'no' ? 'NO' : a.score_type === 'partial' ? 'PARTIAL' : 'YES';
+        section_b[code] = rubricScore;
+        if (rubricScore === 'NO') {
+          improvement_areas.push({
+            indicator_code: code,
+            indicator_name: ficoNameMap[code] || code,
+            score: 'NO',
+          });
+        }
+      }
+      return {
+        id: h.observation_id,
+        teacher_id: h.user_id,
+        teacher_name: h.teacher_name,
+        school_id: h.school_id,
+        school_name: h.school_name,
+        region_id: h.region_id,
+        region_name: h.region_name || 'Unassigned',
+        subject: h.subject,
+        grade: h.grade,
+        topic: h.topic,
+        observation_date: h.observation_date,
+        feedback_english: h.feedback || '',
+        transcription: null,
+        rubric_type: 'FICO V3',
+        created_at: h.observation_date,
+        improvement_areas,
+        results_json: { section_b },
+        source: 'niete' as const,
+      };
+    });
+
+    // Log summary
+    const regions = new Set(nieteObsCache.map(o => o.region_name));
+    const schools = new Set(nieteObsCache.map(o => o.school_id));
+    const teachers = new Set(nieteObsCache.map(o => o.teacher_id));
+    console.log(`[DEBUG] NIETE observations loaded: ${nieteObsCache.length} obs · ${teachers.size} teachers · ${schools.size} schools · ${regions.size} regions`);
+  } catch (e) {
+    console.warn('[WARN] Could not load NIETE observations:', (e as any).message);
+  }
+}
+
 async function initialize() {
   try {
     console.log('🔄 Connecting to database...');
@@ -315,6 +469,7 @@ async function initialize() {
 
     // Probe NIETE FDE in parallel with Railway — non-fatal if unavailable
     await loadFdeIndicatorStats();
+    await loadNieteObservations();
   } catch (err) {
     console.error('❌ Error:', err);
     process.exit(1);
@@ -588,9 +743,95 @@ app.get('/api/teachers-with-observations', (req, res) => {
   res.json(ids);
 });
 
-app.get('/api/teacher/:id/observations', (req, res) => {
-  const obs = observationsCache.filter(o => o.teacher_id === req.params.id);
+// ─── NIETE cascading landing-page endpoints ────────────────────────────────
+// All read from the in-memory nieteObsCache — no DB round-trip per call.
+// Chain: Region → School → Teacher → Observation → existing training/practice flow.
+
+app.get('/api/niete/regions', (req, res) => {
+  const byRegion: Record<string, { region_name: string; region_id: string | null; obs_count: number; school_count: Set<string>; teacher_count: Set<string> }> = {};
+  for (const o of nieteObsCache) {
+    const key = o.region_name;
+    if (!byRegion[key]) byRegion[key] = { region_name: o.region_name, region_id: o.region_id, obs_count: 0, school_count: new Set(), teacher_count: new Set() };
+    byRegion[key].obs_count++;
+    byRegion[key].school_count.add(o.school_id);
+    byRegion[key].teacher_count.add(o.teacher_id);
+  }
+  const regions = Object.values(byRegion)
+    .map(r => ({ region_name: r.region_name, region_id: r.region_id, obs_count: r.obs_count, school_count: r.school_count.size, teacher_count: r.teacher_count.size }))
+    .sort((a, b) => a.region_name.localeCompare(b.region_name));
+  res.json(regions);
+});
+
+app.get('/api/niete/schools', (req, res) => {
+  const region = req.query.region as string | undefined;
+  const filtered = region ? nieteObsCache.filter(o => o.region_name === region) : nieteObsCache;
+  const bySchool: Record<string, { school_id: string; school_name: string; region_name: string; obs_count: number; teachers: Set<string> }> = {};
+  for (const o of filtered) {
+    if (!bySchool[o.school_id]) bySchool[o.school_id] = { school_id: o.school_id, school_name: o.school_name, region_name: o.region_name, obs_count: 0, teachers: new Set() };
+    bySchool[o.school_id].obs_count++;
+    bySchool[o.school_id].teachers.add(o.teacher_id);
+  }
+  const schools = Object.values(bySchool)
+    .map(s => ({ school_id: s.school_id, school_name: s.school_name, region_name: s.region_name, obs_count: s.obs_count, teacher_count: s.teachers.size }))
+    .sort((a, b) => a.school_name.localeCompare(b.school_name));
+  res.json(schools);
+});
+
+app.get('/api/niete/teachers', (req, res) => {
+  const schoolId = req.query.schoolId as string | undefined;
+  const region = req.query.region as string | undefined;
+  const filtered = nieteObsCache.filter(o =>
+    (schoolId ? o.school_id === schoolId : true) &&
+    (region ? o.region_name === region : true)
+  );
+  const byTeacher: Record<string, { teacher_id: string; teacher_name: string; school_name: string; region_name: string; obs_count: number }> = {};
+  for (const o of filtered) {
+    if (!byTeacher[o.teacher_id]) byTeacher[o.teacher_id] = { teacher_id: o.teacher_id, teacher_name: o.teacher_name, school_name: o.school_name, region_name: o.region_name, obs_count: 0 };
+    byTeacher[o.teacher_id].obs_count++;
+  }
+  const teachers = Object.values(byTeacher).sort((a, b) => a.teacher_name.localeCompare(b.teacher_name));
+  res.json(teachers);
+});
+
+app.get('/api/niete/teacher/:teacherId/observations', (req, res) => {
+  const obs = nieteObsCache.filter(o => o.teacher_id === req.params.teacherId);
   res.json(obs);
+});
+
+app.get('/api/niete/observation/:observationId', (req, res) => {
+  const obs = nieteObsCache.find(o => o.id === req.params.observationId);
+  if (!obs) return res.status(404).json({ error: 'Observation not found' });
+  res.json(obs);
+});
+
+// Highest-priority flagged indicator on a specific NIETE observation.
+// Uses the same priority-rank logic as the Railway path — reads improvement_areas
+// (derived at load time from score_type='no' rows).
+app.get('/api/niete/observation/:observationId/highest-priority-indicator', (req, res) => {
+  const obs = nieteObsCache.find(o => o.id === req.params.observationId);
+  if (!obs) return res.status(404).json({ error: 'Observation not found' });
+  const flagged = (obs.improvement_areas || [])
+    .filter(a => a.score === 'NO' && a.indicator_code && trainings[a.indicator_code])
+    .map(a => ({ code: a.indicator_code, priority: getPriorityRank(a.indicator_code) }))
+    .sort((a, b) => a.priority - b.priority);
+  if (flagged.length === 0) {
+    return res.json({ indicator: null });
+  }
+  res.json({ indicator: flagged[0].code });
+});
+
+// Feedback text for the matcher — returns whichever observation the frontend selected
+app.get('/api/niete/observation/:observationId/feedback', (req, res) => {
+  const obs = nieteObsCache.find(o => o.id === req.params.observationId);
+  if (!obs) return res.status(404).json({ error: 'Observation not found' });
+  res.json({ feedback_english: obs.feedback_english, indicator_codes_flagged: obs.improvement_areas.map(a => a.indicator_code) });
+});
+
+app.get('/api/teacher/:id/observations', (req, res) => {
+  // Merge Railway + NIETE observations for this teacher_id (works whichever source they came from)
+  const railway = observationsCache.filter(o => o.teacher_id === req.params.id);
+  const niete = nieteObsCache.filter(o => o.teacher_id === req.params.id);
+  res.json([...niete, ...railway]);
 });
 
 // Get FILTERED flagged indicators (only from unlocked tiers)
@@ -672,12 +913,25 @@ app.get('/api/training/:code/for-teacher/:teacherId', async (req, res) => {
 
   if (!t) return res.status(404).json({ error: 'Training not found' });
 
-  // Get teacher's most recent feedback
-  const obs = observationsCache
-    .filter(o => o.teacher_id === teacherId)
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
-
-  const feedback = obs?.feedback_english || '';
+  // Feedback can be pinned to a specific observation via ?observationId= (NIETE flow).
+  // Otherwise: find the teacher's most recent observation across Railway + NIETE caches.
+  const observationId = req.query.observationId as string | undefined;
+  let feedback = '';
+  if (observationId) {
+    const niete = nieteObsCache.find(o => o.id === observationId);
+    if (niete) {
+      feedback = niete.feedback_english || '';
+    } else {
+      const rail = observationsCache.find((o: any) => o.id === observationId);
+      feedback = rail?.feedback_english || '';
+    }
+  } else {
+    const merged = [
+      ...nieteObsCache.filter(o => o.teacher_id === teacherId),
+      ...observationsCache.filter((o: any) => o.teacher_id === teacherId),
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    feedback = merged[0]?.feedback_english || '';
+  }
 
   // Use AI to match feedback to best training resource
   const resourceIndex = await matchTrainingToFeedback(code, feedback, t.resources || []);

@@ -554,3 +554,46 @@
 .back-btn:hover {
   background: #2980b9;
 }
+
+/* Cascading filter row */
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 16px 0 24px;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.filter-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #57606a;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.filter-group .teacher-dropdown {
+  width: 100%;
+}
+.filter-group .teacher-dropdown:disabled {
+  background: #f6f8fa;
+  color: #8c959f;
+  cursor: not-allowed;
+}
+.obs-flag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #ffe4d6;
+  color: #c04a1c;
+  font-size: 12px;
+  font-weight: 600;
+}
+@media (max-width: 768px) {
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+}
