@@ -215,6 +215,7 @@ export default function TestPage() {
           <FeedbackTrainingModule
             teacherId={selectedTeacher.teacher_id}
             indicatorCode={highestPriorityIndicator as any}
+            observationId={selectedObservation.id}
             onClose={() => setShowTrainingModule(false)}
           />
         </div>

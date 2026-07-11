@@ -26,6 +26,7 @@ const indicatorNames: Record<string, string> = {
 interface FeedbackTrainingModuleProps {
   teacherId: string;
   indicatorCode: IndicatorCode;
+  observationId?: string;   // NEW — pins matcher + rendered feedback to this specific observation
   onClose?: () => void;
 }
 
@@ -35,6 +36,7 @@ type PracticeMode = null | 'scenario' | 'roleplay';
 export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
   teacherId,
   indicatorCode,
+  observationId,
   onClose,
 }) => {
   const [state, setState] = useState<ModuleState>('feedback');
@@ -52,15 +54,24 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
     const loadData = async () => {
       try {
         setLoading(true);
-        // Load observation + training in parallel; training tells us WHICH specific resource was picked for this teacher
+        // If observationId is provided (new landing-page flow), load THAT specific observation
+        // from NIETE and pin the matcher's feedback lookup to it. Falls back to most-recent
+        // observation (legacy Railway flow) when observationId is absent.
+        const obsUrl = observationId
+          ? `http://localhost:3001/api/niete/observation/${encodeURIComponent(observationId)}`
+          : null;
+        const trainUrl = observationId
+          ? `http://localhost:3001/api/training/${encodeURIComponent(indicatorCode)}/for-teacher/${encodeURIComponent(teacherId)}?observationId=${encodeURIComponent(observationId)}`
+          : `http://localhost:3001/api/training/${encodeURIComponent(indicatorCode)}/for-teacher/${encodeURIComponent(teacherId)}`;
+
         const [obs, train] = await Promise.all([
-          apiService.getObservation(teacherId),
-          apiService.getTraining(indicatorCode, teacherId),
+          obsUrl
+            ? fetch(obsUrl).then(r => r.json())
+            : apiService.getObservation(teacherId),
+          fetch(trainUrl).then(r => r.json()),
         ]);
         setObservation(obs);
         setTraining(train);
-        // Practice questions are scoped to the specific training the matcher picked,
-        // so two teachers with the same indicator but different trainings get different questions
         const trainingCode = train?.selectedResource?.code;
         const questions = await apiService.getPracticeQuestions(indicatorCode, trainingCode);
         setPracticeQuestions(questions);
@@ -72,7 +83,7 @@ export const FeedbackTrainingModule: React.FC<FeedbackTrainingModuleProps> = ({
     };
 
     loadData();
-  }, [teacherId, indicatorCode]);
+  }, [teacherId, indicatorCode, observationId]);
 
   if (loading) {
     return (
