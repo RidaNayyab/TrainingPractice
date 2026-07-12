@@ -1781,10 +1781,10 @@ app.post('/api/roleplay', async (req, res) => {
       situationDirective = `IMMEDIATE INSTRUCTION: The conversation is empty. This is turn 0. Follow the BEFORE TURN 1 — SET THE SCENE instructions. Return the scene text (2-3 lines) in "message", isComplete=false, ending=null.`;
     } else if (teacherTurnsSoFar < 3) {
       situationDirective = `IMMEDIATE INSTRUCTION: The teacher has responded ${teacherTurnsSoFar} time(s) so far. Read her most recent teacher message and score it against the rubric.
-- If she has met Level 3 or 4 of the rubric → step out and give the PASS ENDING coaching. Return isComplete=true, ending="PASS", the 4-5 sentence coaching in both "message" and "coachingFeedback".
+- If she has met Level 3 or 4 of the rubric → step out and give the PASS ENDING coaching. Return isComplete=true, ending="PASS", MAX 3 sentences (~50 words) in both "message" and "coachingFeedback".
 - If she has NOT met Level 3 or 4 → continue as the student. Return the next student utterance (1-3 lines) in "message", isComplete=false, ending=null.`;
     } else {
-      situationDirective = `IMMEDIATE INSTRUCTION: The teacher has already responded 3 times. This is the FORCED FINAL ENDING regardless of score. You MUST step out of the student role now. Do NOT return another student utterance. Return isComplete=true, ending="FINAL", the 5-6 sentence FINAL ENDING coaching in both "message" and "coachingFeedback". Follow the FINAL ENDING structure from the template.`;
+      situationDirective = `IMMEDIATE INSTRUCTION: The teacher has already responded 3 times. This is the FORCED FINAL ENDING regardless of score. You MUST step out of the student role now. Do NOT return another student utterance. Return isComplete=true, ending="FINAL", MAX 4 sentences (~65 words) following the FINAL ENDING structure, in both "message" and "coachingFeedback". Keep it tight and mobile-readable — no long paragraphs.`;
     }
 
     const contextBlock = `
