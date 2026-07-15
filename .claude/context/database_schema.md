@@ -86,17 +86,74 @@ Some training videos are mapped under multiple indicators. Each shared training 
 | TPS_URDU_PDF (Think-Pair-Share) | M2, S2 | 4 |
 | CE_02_08 (Vocabulary → R/W) | L2, L3 | 4 |
 
+### Table: `teacher_practice_attempts`
+
+Every teacher response and every roleplay session — persisted forever. Nothing gets dumped.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | integer (SERIAL PK) | auto-increment |
+| `teacher_id` | varchar(50) NOT NULL | matches `teacher_id` used across the app (Railway teacher_id or NIETE user_id) |
+| `indicator_code` | varchar(50) NOT NULL | e.g. `SI1`, `PIC-1` |
+| `training_code` | varchar(50) | the specific training video the matcher picked |
+| `mode` | varchar(20) NOT NULL | `'scenario'` or `'roleplay'` |
+| `question_id` | varchar(100) | for scenario mode — matches `generated_practice_questions.question_id` |
+| `session_id` | varchar(64) UNIQUE | for roleplay — one row per session, upserted turn-by-turn |
+| `turn_number` | integer | roleplay turn count |
+| `is_complete` | boolean | true when the session has concluded (scenario always true; roleplay only on PASS or FINAL) |
+| `scenario` | text | classroom scenario shown to teacher |
+| `prompt` | text | the exact question asked |
+| `rubric_criteria` | text[] | question-specific rubric items the teacher was evaluated against |
+| `response` | text | for scenario mode: the teacher's typed answer |
+| `conversation_history` | jsonb | for roleplay mode: full turn-by-turn `[{role, message}]` (roles: `scene`, `student`, `teacher`, `coach`) |
+| `evaluation` | jsonb | `{ score, feedback, rubric_criteria_met, rubric_criteria_missed, rubric_criteria_not_applicable }` for scenario; `{ ending: 'PASS'\|'FINAL', feedback }` for roleplay |
+| `created_at` | timestamp | first INSERT time (preserved through upserts) |
+| `updated_at` | timestamp | last upsert time (roleplay turns update this) |
+
+**Indexes:** `idx_tpa_teacher (teacher_id)`, `idx_tpa_ind_train (indicator_code, training_code)`, `idx_tpa_session_unique (session_id)` — unique so `ON CONFLICT (session_id) DO UPDATE` works for the roleplay upsert path.
+
+### Persistence rules
+
+1. **Scenario mode** — INSERT one row per submitted question. Never updates.
+2. **Roleplay mode** — INSERT on turn 1 with `session_id`, then UPDATE on every subsequent turn. `conversation_history` grows, `turn_number` advances, `evaluation` stays NULL until the final turn. On PASS or FINAL ending, `is_complete=true` and `evaluation` populated with coaching feedback.
+3. **Abandoned roleplays are still saved.** If a teacher leaves mid-session, whatever turns were completed remain in the DB with `is_complete=false`.
+4. **Fire-and-log persistence** — save runs async after the AI response; a persistence failure NEVER blocks feedback from reaching the teacher.
+
 ## External DB: NIETE FDE Production
 
-Read-only source. See `.claude/context/database_niete_fde.md` for full schema + query patterns. Used at server boot to:
-- Compute per-indicator failure rate (matching DB question prompts to FICO rubric descriptions to build a `question_id → indicator_code` map)
-- Log stats like "L2: 86.1% miss rate (780 NO / 3 PARTIAL / 125 YES, n=908)" — informs the failure-rate context injected into generation prompts
+Read-only source. See `.claude/context/database_niete_fde.md` for full schema + query patterns. Used at server boot for two things:
 
-## Cached observations (loaded at boot)
+### 1. Per-indicator failure-rate stats
+`loadFdeIndicatorStats()` matches DB question prompts to FICO rubric descriptions to build a `question_id → indicator_code` map, then aggregates YES/PARTIAL/NO across all completed FICO V3 observations. Logs stats like "L2: 86.1% miss rate (780 NO / 3 PARTIAL / 125 YES, n=908)" — these are injected into generation prompts.
 
-The server also holds ~500 observation rows from Railway's own `observations` table in memory (loaded once at startup, DB connection closed after). These drive:
-- The teacher-selector dropdown (`/api/teachers-with-observations`)
-- Flagged-indicator detection per teacher (`/api/teacher/:id/flagged-indicators`)
-- The most-recent-feedback lookup consumed by the matcher
+### 2. Full observation cache (`nieteObsCache`)
+`loadNieteObservations()` pulls every completed FICO V3 observation with joins to region, school, teacher, and lesson plan. Per row it also derives:
+- `improvement_areas: [{ indicator_code, indicator_name, score: 'NO' }]` from `coaching_observationanswer` rows where `score_type='no'`
+- `results_json: { section_b: { SI1: 'YES'|'PARTIAL'|'NO', ... } }` from the same
 
-If the observations table changes, restart the server to pick up new data.
+This means the existing `FeedbackTrainingModule` (which reads `improvement_areas` + `results_json.section_b` to detect flagged indicators) works with NIETE observations without any change.
+
+**Current size:** 2,487 observations · 558 teachers · 150 schools · 7 regions
+
+### Region distribution
+
+| Region | Schools | Teachers | Observations |
+|---|---|---|---|
+| Urban-I | 23 | 160 | 1,072 |
+| Tarnol | 25 | 90 | 526 |
+| Sihala | 27 | 100 | 363 |
+| B.K | 29 | 78 | 207 |
+| Urban-II | 19 | 68 | 153 |
+| Nilore | 24 | 58 | 92 |
+| Unassigned | 3 | 4 | 74 |
+
+## Legacy Railway observations (loaded at boot)
+
+The server also holds ~500 rows from Railway's own `observations` table in memory. These are the pre-NIETE observations used before the landing page migrated to NIETE. They still work for:
+- `/api/teachers-with-observations`
+- `/api/teacher/:id/flagged-indicators`
+- `/api/teacher/:id/highest-priority-indicator`
+
+The teacher-observations endpoint `/api/teacher/:id/observations` merges Railway + NIETE so downstream flows work regardless of source.
+
+If the underlying tables change, restart the server to pick up fresh data.

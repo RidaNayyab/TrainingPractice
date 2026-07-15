@@ -1,6 +1,6 @@
 # Training Matcher & Response Evaluator
 
-Two Anthropic-powered pieces that sit inside the teacher flow (not the authoring pipeline). Both use `claude-opus-4-7`.
+Two AI-powered pieces that sit inside the teacher flow (not the authoring pipeline). Both use **OpenRouter · `openai/gpt-5.1`** via the shared `callOpenRouterChat()` helper — same as everything else in the server.
 
 ## 1. Training Matcher — `matchTrainingToFeedback()`
 
@@ -25,15 +25,16 @@ Two teachers can both be flagged for the same indicator (e.g. SI1) but need diff
 
 Same indicator, different feedback content → different training. That's the whole point.
 
-### How the picker works (post-fix)
+### How the picker works
 
-1. **Scope the feedback:** the endpoint extracts ONLY the section of the coach's structured feedback that pertains to the current indicator (using the indicator's display name from `ficoNameMap`, e.g. "Instructional Clarity" for SI1). Without this scoping, the matcher reads coach guidance for SI1 + SI3 + SI2 all at once and biases toward the broadest fix.
-2. **Prompt Claude with an analytical framework** rather than "pick 1/2/3":
+1. **Pin to a specific observation.** The endpoint accepts `?observationId=X` — when the landing page sends this (which it does), the matcher reads THAT exact observation's feedback text, not the teacher's most-recent. This is critical: different observations of the same teacher can genuinely need different trainings.
+2. **Scope the feedback to just this indicator's section.** Extracts ONLY the paragraph that pertains to the current indicator (using the indicator's display name from `ficoNameMap`, e.g. "Instructional Clarity" for SI1). Without this scoping, the matcher reads coach guidance for SI1 + SI3 + SI2 all at once and biases toward the broadest fix.
+3. **Prompt the model with an analytical framework** rather than "pick 1/2/3":
    - Identify what the coach is prescribing (`self-check`, `try`, `next time` language)
    - Map the prescription to the training whose rationale describes the SAME failure pattern
    - Concrete mapping rules for goal-statement vs comprehension-check vs escalation signals
    - Explicit anti-default instruction: "Do NOT default to resource #1. If the feedback evidence does not match #1's rationale, pick the better-fitting one."
-3. Return a single digit → resource index.
+4. Return a single digit → resource index.
 
 ### Known behavior
 
@@ -92,9 +93,10 @@ The endpoint used to extract indicator from `questionId.split('-')[0]`. That wor
 
 Fully wired teacher flow:
 
-1. Teacher clicks an observation → **Matcher** picks training X for indicator I based on feedback content
+1. Teacher picks an observation → **Matcher** reads THAT observation's coach feedback (pinned via `?observationId=`) and picks training X for indicator I
 2. Frontend fetches practice questions for (I, X) specifically — NOT the full indicator pool
-3. Teacher writes response → **Evaluator** scores against (I, X)'s question-specific rubric plus I's indicator rubric, returns coaching nudge
+3. Teacher chooses practice mode: **Scenario Questions** (Evaluator scores each response with tight peer-to-peer coaching nudge) OR **Roleplay** (dynamic AI student, up to 3 turns, coaching feedback at end — see `roleplay_prompt.md`)
+4. Every response + feedback is saved to `teacher_practice_attempts` (see `database_schema.md`)
 
 Two teachers flagged for the same indicator I but with different feedback content get:
 - Different training video X vs Y
@@ -102,4 +104,15 @@ Two teachers flagged for the same indicator I but with different feedback conten
 - Different rubric criteria to be evaluated against
 - Different coaching feedback
 
-This is the "personalized enough to be useful, not just generic" property.
+Same teacher clicking two of her own observations gets:
+- Potentially different training picks (matcher pinned per observation, not per teacher)
+- The specific coach feedback rendered from THAT observation, not the most-recent
+
+This is the "personalized enough to be useful, not just generic" property, doubled down at both teacher-level and observation-level.
+
+## 3. Roleplay (`/api/roleplay`)
+
+The third AI-powered piece, added later. Separate from the matcher/evaluator but shares the OpenRouter GPT-5.1 provider. Fully prompt-driven — the template lives at `.claude/context/roleplay_prompt.md`. See that file + `architecture_overview.md` for details. Coaching endings recently tightened:
+- **PASS ENDING** (rubric met early): MAX 3 sentences, ~50 words
+- **FINAL ENDING** (turn 3 forced): MAX 4 sentences, ~65 words
+- Mobile-readable in a single glance, no long paragraphs.
